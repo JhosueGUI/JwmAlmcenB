@@ -27,7 +27,7 @@ class InventarioValorizadoController extends Controller
                 'inventario.estado_operativo',
                 'inventario.producto.articulo.sub_familia.familia',
                 'inventario.producto.unidad_medida',
-            ])->where('estado_registro', 'A')->paginate(50);
+            ])->where('estado_registro', 'A')->get();
 
             // Verificar si hay inventarios valorizados
             if ($inventario_valorizado->isEmpty()) {
