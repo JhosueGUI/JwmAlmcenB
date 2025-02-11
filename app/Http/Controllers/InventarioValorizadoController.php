@@ -63,8 +63,35 @@ class InventarioValorizadoController extends Controller
 
                 $producto->transacciones = $transacciones;
             }
-
-            return response()->json(['data' => $inventario_valorizado], 200);
+            $adaptarRespuesta = $inventario_valorizado->map(function ($inventario) {
+                return [
+                    'id' => $inventario->id,
+                    'ubicacion_id' => $inventario->inventario->ubicacion_id,
+                    'ubicacion' => $inventario->inventario?->ubicacion?->codigo_ubicacion,
+                    'SKU' => $inventario->inventario?->producto?->SKU,
+                    'familia_id' => $inventario->inventario?->producto?->articulo?->sub_familia?->sub_familia_id,
+                    'familia' => $inventario->inventario?->producto?->articulo?->sub_familia?->familia?->familia,
+                    'sub_familia_id' => $inventario->inventario?->producto?->articulo?->sub_familia_id,
+                    'sub_familia' => $inventario->inventario?->producto?->articulo?->sub_familia?->nombre,
+                    'nombre' => $inventario->inventario?->producto?->articulo?->nombre,
+                    'unidad_medida_id' => $inventario->inventario?->producto?->unidad_medida_id,
+                    'unidad_medida' => $inventario->inventario?->producto?->unidad_medida?->nombre,
+                    'fecha_salida' => optional($inventario->inventario->producto->transacciones[1]->salida[0] ?? null)->fecha,
+                    'fecha_ingreso' => optional($inventario->inventario->producto->transacciones[0]->salida[0] ?? null)->fecha,
+                    'precio_dolares' => $inventario->inventario?->producto?->articulo?->precio_dolares,
+                    'precio_soles' => $inventario->inventario?->producto?->articulo?->precio_soles,
+                    'valor_inventario_soles' => $inventario->valor_inventario_soles,
+                    'valor_inventario_dolares' => $inventario->valor_inventario_dolares,
+                    'total_ingreso' => $inventario->inventario?->total_ingreso,
+                    'total_salida' =>  $inventario->inventario?->total_salida,
+                    'stock_logico' => $inventario->inventario?->stock_logico,
+                    'demanda_mensual' => $inventario->inventario?->demanda_mensual,
+                    'estado_operativo' => $inventario->inventario?->estado_operativo?->nombre,
+                ];
+            });
+            
+            
+            return response()->json(['data' => $adaptarRespuesta], 200);
         } catch (\Exception $e) {
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
