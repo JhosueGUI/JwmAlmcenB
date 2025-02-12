@@ -38,6 +38,21 @@
                 <th><strong>Combustible Ruta</strong></th>
                 <th><strong>Precio Unitario Soles</strong></th>
                 <th><strong>Precio Total Soles</strong></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th><strong>Destino</strong></th>
+                <th><strong>Contómetro</strong></th>
+                <th><strong>Margen Error</strong></th>
+                <th><strong>Resultado</strong></th>
+                <th><strong>Precinto Nuevo</strong></th>
+                <th><strong>Precinto Anterior</strong></th>
+                <th><strong>Observación</strong></th>
+
+
+
+
             </tr>
         </thead>
         <tbody>
@@ -53,7 +68,17 @@
                         <td>{{ $detalle['numero_salida_ruta'] }}</td>
                         <td>S/. {{ $detalle['precio_unitario_soles'] }}</td>
                         <td>S/. {{ $detalle['precio_total_soles'] }}</td>
-                        
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{$detalle['destino']}}</td>
+                        <td>{{$detalle['contometro']}}</td>
+                        <td>{{$detalle['margen_error']}}</td>
+                        <td>{{$detalle['resultado']}}</td>
+                        <td>{{$detalle['precinto_nuevo']}}</td>
+                        <td>{{$detalle['precinto_anterior']}}</td>
+                        <td>{{$detalle['observacion']}}</td>
 
                     </tr>
                 @endforeach

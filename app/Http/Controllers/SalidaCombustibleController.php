@@ -217,6 +217,13 @@ class SalidaCombustibleController extends Controller
                                 'numero_salida_stock' => $item->numero_salida_stock,
                                 'kilometraje' => $item->kilometraje,
                                 'horometro' => $item->horometro,
+                                'destino'=>$item->destino_combustible->nombre,
+                                'contometro'=>$item->contometro_surtidor,
+                                'margen_error'=>$item->margen_error_surtidor,
+                                'resultado'=>$item->resultado,
+                                'precinto_nuevo'=>$item->precinto_nuevo,
+                                'precinto_anterior'=>$item->precinto_anterior,
+                                'observacion'=>$item->observacion,
                             ];
                         })
                     ]
