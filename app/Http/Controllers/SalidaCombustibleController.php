@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\SalidaCombustibleExport;
+use App\Imports\SalidaCombustibleImport;
 use App\Models\Articulo;
 use App\Models\Combustible;
 use App\Models\DestinoCombustible;
@@ -16,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 class SalidaCombustibleController extends Controller
 {
@@ -217,13 +219,13 @@ class SalidaCombustibleController extends Controller
                                 'numero_salida_stock' => $item->numero_salida_stock,
                                 'kilometraje' => $item->kilometraje,
                                 'horometro' => $item->horometro,
-                                'destino'=>$item->destino_combustible->nombre,
-                                'contometro'=>$item->contometro_surtidor,
-                                'margen_error'=>$item->margen_error_surtidor,
-                                'resultado'=>$item->resultado,
-                                'precinto_nuevo'=>$item->precinto_nuevo,
-                                'precinto_anterior'=>$item->precinto_anterior,
-                                'observacion'=>$item->observacion,
+                                'destino' => $item->destino_combustible->nombre,
+                                'contometro' => $item->contometro_surtidor,
+                                'margen_error' => $item->margen_error_surtidor,
+                                'resultado' => $item->resultado,
+                                'precinto_nuevo' => $item->precinto_nuevo,
+                                'precinto_anterior' => $item->precinto_anterior,
+                                'observacion' => $item->observacion,
                             ];
                         })
                     ]
@@ -252,6 +254,67 @@ class SalidaCombustibleController extends Controller
             ];
             return response()->json(['resp' => $data], 200);
         } catch (\Exception $e) {
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }
+    }
+    public function subirSalidaCombustible(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $request->validate([
+                'salida_combustible' => 'required|file|mimes:xlsx,xls'
+            ]);
+
+            $archivo = $request->file('salida_combustible');
+
+            $nombreArchivo = $archivo->getClientOriginalName();
+
+            if (Storage::exists('public/salida_combustible/' . $nombreArchivo)) {
+                return response()->json(['error' => 'Ya existe un archivo con este nombre. Por favor, renombre el archivo y vuelva a intentarlo.'], 500);
+            }
+
+            $archivo->storeAs('public/salida_combustible', $nombreArchivo);
+
+            Excel::import(new SalidaCombustibleImport, storage_path('app/public/salida_combustible/' . $nombreArchivo));
+            DB::commit();
+            return response()->json(['resp' => 'Archivo subido y procesado correctamente'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }
+    }
+    public function elimarSalidaCombustible($id)
+    {
+        try {
+            DB::beginTransaction();
+            $salida_combustible = Combustible::with(['transaccion.producto.articulo'])->where('estado_registro', 'A')->find($id);
+            if (!$salida_combustible) {
+                return response()->json(['resp' => 'La salida de combustible ya se encuentra Inhabilitado'], 500);
+            }
+            $numero_salida_combustible = $salida_combustible->numero_salida_stock;
+            if ($numero_salida_combustible > 0) {
+                $inventario=Inventario::where('estado_registro','A')->where('producto_id',$salida_combustible->transaccion->producto_id)->first();
+                //restar el numero de salida
+                $total_salida=$inventario->total_salida-$numero_salida_combustible;
+                $inventario->update([
+                    'total_salida'=>$total_salida,
+                    'stock_logico'=>$inventario->total_ingreso-$total_salida
+                ]);
+                $inventario_valorizado=InventarioValorizado::where('estado_registro','A')->where('inventario_id',$inventario->id)->first();
+
+                $inventario_valorizado->update([
+                    'valor_inventario_soles'=>$inventario->stock_logico*$salida_combustible->transaccion->producto->articulo->precio_soles,
+                    'valor_inventario_dolares'=>$inventario->stock_logico*$salida_combustible->transaccion->producto->articulo->precio_dolares
+                ]);
+                $transaccion=Transaccion::where('estado_registro','A')->where('id',$salida_combustible->transaccion_id)->first();
+            $transaccion->delete();
+            }
+            
+            $salida_combustible->delete();
+            DB::commit();
+            return response()->json(['resp' => 'Salida de Combustible Eliminado Correctamente'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
     }
