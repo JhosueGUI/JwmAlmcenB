@@ -302,7 +302,7 @@
         <hr style="border: none;">
         <hr style="border: none;">
         <p>
-            <span>Aprovador por:&nbsp;&nbsp;&nbsp;&nbsp; Gerencia</span>
+            <span>Aprobado por:&nbsp;&nbsp;&nbsp;&nbsp; Gerencia</span>
 
         </p>
     </div>
