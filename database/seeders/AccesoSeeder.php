@@ -10,13 +10,38 @@ class AccesoSeeder extends Seeder
 {
     public function run(): void
     {
+       
         $accesos = [
-            'Inventario',
-            'Ingreso',
-            'Salida',
-            'Orden de Compra',
+            [
+                'nombre'=> 'Almacen',
+                'subAcceso' => [
+                    'Inventario',
+                    'Ingreso',
+                    'Salida',
+                    'Orden de Compra',
+                ]
+            ],
+            [
+                'nombre' => 'RRHH',
+                'subAcceso' => [
+                    'Asistencias',
+                    'Horarios',
+                ]
+            ],
+            [
+                'nombre'=> 'Finanzas',
+                'subAcceso' => [
+                    'Movimientos',
+                ]
+            ],
             [
                 'nombre' => 'Mantenimiento',
+                'subAcceso' => [
+                    'Ingreso MMTTO'
+                ]
+            ],
+            [
+                'nombre' => 'Administración',
                 'subAcceso' => [
                     'Proveedor',
                     'Personal',
