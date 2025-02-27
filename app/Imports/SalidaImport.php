@@ -45,7 +45,7 @@ class SalidaImport implements ToArray, WithChunkReading
                 $fecha_vencimiento = $row[8] ?? null;
                 $sku = $row[9] ?? null;
                 $marca = $row[13] ?? null;
-                $numero_salida = floatval($row[15] ?? 0); // Convertir a flotante
+                $numero_salida = floatval($row[15] ?? 0) ?? null; // Convertir a flotante
                 $precio_unitario_soles = floatval($row[16] ?? 0); // Convertir a flotante
                 $precio_unitario_dolares = floatval($row[17] ?? 0); // Convertir a flotante
                 $observaciones = $row[19] ?? null;
@@ -104,7 +104,7 @@ class SalidaImport implements ToArray, WithChunkReading
                     'fecha' => $fecha,
                     'vale' => $vale,
                     'destino' => $destino,
-                    'unidad' => $unidad,
+                    'unidad' => $unidad ?? null,
                     'duracion_neumatico' => $duracion_neumatico,
                     'kilometraje_horometro' => $kilometraje_horometro,
                     'fecha_vencimiento' => $fecha_vencimiento,
