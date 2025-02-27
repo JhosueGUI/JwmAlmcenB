@@ -61,8 +61,8 @@
                     <tr>
                         <td>{{ $salida['placa'] }}</td>
                         <td>{{ $detalle['fecha']}}</td>
-                        <td>{{ $detalle['kilometraje']}} KM</td>
-                        <td>{{ $detalle['horometro']}} HR</td>
+                        <td>{{ $detalle['kilometraje']}}</td>
+                        <td>{{ $detalle['horometro']}}</td>
                         <td>{{ $detalle['personal'] }}</td>
                         <td>{{ $detalle['numero_salida_stock'] }}</td>
                         <td>{{ $detalle['numero_salida_ruta'] }}</td>
