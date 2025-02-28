@@ -188,6 +188,24 @@ class SalidaCombustibleController extends Controller
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
     }
+    public function EditarSalidaCombustible($id, Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $combustible = Combustible::where('estado_registro', 'A')->find($id);
+            if (!$combustible) {
+                return response()->json(['resp' => 'Salida de Combustible no encontrada'], 404);
+            }
+            $fecha = $request->fecha;
+            $combustible->update([
+                "fecha" => $fecha,
+            ]);
+            DB::commit();
+            return response()->json(['resp' => 'Salida de Combustible Actualizado Correctamente'], 200);
+        } catch (\Exception $e) {
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }
+    }
     public function ExportarConsumoPorPlaca(Request $request)
     {
         try {
@@ -293,23 +311,23 @@ class SalidaCombustibleController extends Controller
             }
             $numero_salida_combustible = $salida_combustible->numero_salida_stock;
             if ($numero_salida_combustible > 0) {
-                $inventario=Inventario::where('estado_registro','A')->where('producto_id',$salida_combustible->transaccion->producto_id)->first();
+                $inventario = Inventario::where('estado_registro', 'A')->where('producto_id', $salida_combustible->transaccion->producto_id)->first();
                 //restar el numero de salida
-                $total_salida=$inventario->total_salida-$numero_salida_combustible;
+                $total_salida = $inventario->total_salida - $numero_salida_combustible;
                 $inventario->update([
-                    'total_salida'=>$total_salida,
-                    'stock_logico'=>$inventario->total_ingreso-$total_salida
+                    'total_salida' => $total_salida,
+                    'stock_logico' => $inventario->total_ingreso - $total_salida
                 ]);
-                $inventario_valorizado=InventarioValorizado::where('estado_registro','A')->where('inventario_id',$inventario->id)->first();
+                $inventario_valorizado = InventarioValorizado::where('estado_registro', 'A')->where('inventario_id', $inventario->id)->first();
 
                 $inventario_valorizado->update([
-                    'valor_inventario_soles'=>$inventario->stock_logico*$salida_combustible->transaccion->producto->articulo->precio_soles,
-                    'valor_inventario_dolares'=>$inventario->stock_logico*$salida_combustible->transaccion->producto->articulo->precio_dolares
+                    'valor_inventario_soles' => $inventario->stock_logico * $salida_combustible->transaccion->producto->articulo->precio_soles,
+                    'valor_inventario_dolares' => $inventario->stock_logico * $salida_combustible->transaccion->producto->articulo->precio_dolares
                 ]);
-                $transaccion=Transaccion::where('estado_registro','A')->where('id',$salida_combustible->transaccion_id)->first();
-            $transaccion->delete();
+                $transaccion = Transaccion::where('estado_registro', 'A')->where('id', $salida_combustible->transaccion_id)->first();
+                $transaccion->delete();
             }
-            
+
             $salida_combustible->delete();
             DB::commit();
             return response()->json(['resp' => 'Salida de Combustible Eliminado Correctamente'], 200);
