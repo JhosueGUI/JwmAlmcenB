@@ -120,6 +120,7 @@ Route::group(['middleware' => [Cors::class]], function () {
                 Route::get('/get/combustible',[SalidaCombustibleController::class,'GetStockCombustible']);
                 Route::post('/importar',[SalidaCombustibleController::class,'subirSalidaCombustible']);
                 Route::delete('/delete/{idSalida}',[SalidaCombustibleController::class,'elimarSalidaCombustible']);
+                Route::post('/update/{idSalida}',[SalidaCombustibleController::class,'EditarSalidaCombustible']);
             });
             Route::group(['prefix'=>'destino_combustible'],function(){
                 Route::get('/get',[DestinoCombustibleController::class,'getDestinoCombustible']);
