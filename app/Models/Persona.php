@@ -14,6 +14,7 @@ class Persona extends Model
         'gmail',
         'tipo_documento_id',
         'numero_documento',
+        'fecha_nacimiento',
         'estado_registro'
     ];
     protected $primaryKey='id';

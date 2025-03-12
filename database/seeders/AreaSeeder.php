@@ -17,15 +17,17 @@ class AreaSeeder extends Seeder
             'ADMINISTRACIÓN Y FINANZAS',
             'OPERACIONES',
             'COMERCIAL',
-            'SEGURIDAD',
-            'MANTENIMIENTO',
+            'VIGILANCIA',
+            'LOGISTICA',
             'ALMACEN',
             'FLOTA',
-            'LIMPIEZA'
+            'LIMPIEZA',
+            'GERENCIA GENERAL'
         ];
         foreach ($areas as $area ) {
             Area::firstOrcreate([
-                'nombre'=>$area
+                'nombre'=>$area,
+                'horario_id'=>1
             ]);
         }
     }

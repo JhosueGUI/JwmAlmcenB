@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('gmail')->nullable();
             $table->foreignId('tipo_documento_id')->nullable()->references('id')->on('tipo_documento')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('numero_documento')->nullable();
+            $table->string('fecha_nacimiento')->nullable();
             $table->char('estado_registro')->default('A');
             $table->timestamps();
         });

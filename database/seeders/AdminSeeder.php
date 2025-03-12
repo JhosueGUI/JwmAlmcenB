@@ -23,7 +23,7 @@ class AdminSeeder extends Seeder
         ]);
         $personal=Personal::firstOrcreate([
             "persona_id"=>$persona->id,
-            "area_id"=>1
+            "cargo_id"=>1
         ]);
         $user=User::firstOrcreate([
             "personal_id"=>$personal->id,

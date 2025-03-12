@@ -3,6 +3,7 @@
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CargoController;
 use App\Http\Controllers\FlotaController;
 use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\InventarioValorizadoController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\SubFamiliaController;
 use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\DestinoCombustibleController;
+use App\Http\Controllers\PlanillaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\Cors;
@@ -124,6 +126,12 @@ Route::group(['middleware' => [Cors::class]], function () {
             });
             Route::group(['prefix'=>'destino_combustible'],function(){
                 Route::get('/get',[DestinoCombustibleController::class,'getDestinoCombustible']);
+            });
+            Route::group(['prefix'=>'planilla'],function(){
+                Route::get('/get',[PlanillaController::class,'get']);
+            });
+            Route::group(['prefix'=>'cargo'],function(){
+                Route::get('/get',[CargoController::class,'get']);
             });
             Route::group(['prefix' => 'flota'], function () {
                 Route::get('/get', [FlotaController::class, 'get']);

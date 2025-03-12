@@ -11,25 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('personal', function (Blueprint $table) {
+        Schema::create('asistencia', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cargo_id')->nullable()->references('id')->on('cargo')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('planilla_id')->nullable()->references('id')->on('planilla')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('persona_id')->nullable()->references('id')->on('persona')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('habilidad')->nullable();
-            $table->string('experiencia')->nullable();
-            $table->string('fecha_ingreso')->nullable();
-            $table->string('fecha_ingreso_planilla')->nullable();
+            $table->string('fecha_asistencia')->nullable();
+            $table->string('dia_asistencia')->nullable();
+            $table->string('hora_ingreso')->nullable();
+            $table->string('hora_salida')->nullable();
+            $table->string('tiempo_total')->nullable();
             $table->char('estado_registro')->default('A');
             $table->timestamps();
         });
     }
- 
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('personal');
+        Schema::dropIfExists('asistencia');
     }
 };
