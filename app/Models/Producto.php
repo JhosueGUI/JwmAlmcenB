@@ -28,11 +28,6 @@ class Producto extends Model
         return $this->belongsTo(UnidadMedida::class,'unidad_medida_id','id');
     }
 
-    // //pertenece a ubicacion (hijo-padre)
-    // public function ubicacion(){
-    //     return $this->belongsTo(Ubicacion::class,'ubicacion_id','id');
-    // }
-
     //le da su id a transaccion(padre-hijo)
     public function transaccion(){
         return $this->hasMany(Transaccion::class);
