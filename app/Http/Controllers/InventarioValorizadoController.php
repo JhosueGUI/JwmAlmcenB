@@ -22,7 +22,7 @@ class InventarioValorizadoController extends Controller
 {
     try {
         // Definir la cantidad de elementos por página (puedes recibirlo desde el frontend)
-        $perPage = $request->input('per_page', 100); // Valor por defecto: 10
+        $perPage = $request->input('per_page', 50); // Valor por defecto: 10
 
         // Obtener los inventarios valorizados con paginación
         $inventario_valorizado = InventarioValorizado::with([
