@@ -19,47 +19,48 @@ use Maatwebsite\Excel\Facades\Excel;
 class InventarioValorizadoController extends Controller
 {
     public function get(Request $request)
-{
-    try {
-        // Definir la cantidad de elementos por página (puedes recibirlo desde el frontend)
-        $perPage = $request->input('per_page', 50); // Valor por defecto: 10
+    {
+        try {
+            $perPage = $request->input('per_page', 50);
 
-        //as
-        // Obtener los inventarios valorizados con paginación
-        $inventario_valorizado = InventarioValorizado::with([
-            'inventario.ubicacion',
-            'inventario.estado_operativo',
-            'inventario.producto.articulo.sub_familia.familia',
-            'inventario.producto.unidad_medida',
-        ])->where('estado_registro', 'A')->paginate($perPage);
+            // Obtener los inventarios valorizados con relaciones optimizadas
+            $inventario_valorizado = InventarioValorizado::with([
+                'inventario' => function ($query) {
+                    $query->select('id', 'ubicacion_id', 'estado_operativo_id', 'producto_id','total_ingreso','total_salida','stock_logico','demanda_mensual');
+                },
+                'inventario.ubicacion:id,codigo_ubicacion',
+                'inventario.estado_operativo:id,nombre',
+                'inventario.producto' => function ($query) {
+                    $query->select('id', 'articulo_id', 'unidad_medida_id','SKU');
+                },
+                'inventario.producto.articulo' => function ($query) {
+                    $query->select('id', 'sub_familia_id','nombre','precio_soles','precio_dolares');
+                },
+                'inventario.producto.articulo.sub_familia' => function ($query) {
+                    $query->select('id', 'familia_id', 'nombre');
+                },
+                'inventario.producto.articulo.sub_familia.familia:id,familia',
+                'inventario.producto.unidad_medida:id,nombre',
+                'inventario.producto.transaccion' => function ($query) {
+                    $query->whereHas('ingreso')
+                        ->orWhereHas('salida')
+                        ->with(['ingreso:id,transaccion_id,fecha', 'salida:id,transaccion_id:fecha'])
+                        ->latest();
+                }
+            ])
+                ->where('estado_registro', 'A')
+                ->paginate($perPage);
 
-        // Verificar si hay datos
-        if ($inventario_valorizado->isEmpty()) {
-            return response()->json(['resp' => 'Inventarios Valorizados no existentes'], 500);
+            // Verificar si hay datos
+            if ($inventario_valorizado->isEmpty()) {
+                return response()->json(['resp' => 'Inventarios Valorizados no existentes'], 500);
+            }
+
+            return response()->json($inventario_valorizado, 200);
+        } catch (\Exception $e) {
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
-
-        // Obtener la última transacción de ingreso y salida por cada producto
-        foreach ($inventario_valorizado as $inventario) {
-            $producto = $inventario->inventario->producto;
-
-            $ultimo_ingreso = $producto->transaccion()->whereHas('ingreso')->with('ingreso')->latest()->first();
-            $ultima_salida = $producto->transaccion()->whereHas('salida')->with('salida')->latest()->first();
-
-            $transacciones = collect();
-            if ($ultimo_ingreso) $transacciones->push($ultimo_ingreso);
-            if ($ultima_salida) $transacciones->push($ultima_salida);
-
-            $producto->transacciones = $transacciones;
-        }
-
-        return response()->json($inventario_valorizado, 200);
-    } catch (\Exception $e) {
-        return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
     }
-}
-
-
-
     public function show($inventario_valorizadoID)
     {
         try {
