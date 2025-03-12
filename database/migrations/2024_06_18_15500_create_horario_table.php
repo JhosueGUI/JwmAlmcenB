@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('area', function (Blueprint $table) {
+        Schema::create('horario', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->nullable();
-            $table->foreignId('horario_id')->nullable()->references('id')->on('horario')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('horario_estandar')->nullable();
             $table->char('estado_registro')->default('A');
             $table->timestamps();
         });
     }
- 
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('area');
+        Schema::dropIfExists('horario');
     }
 };

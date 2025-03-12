@@ -25,7 +25,7 @@ class PersonalController extends Controller
     public function get()
     {
         try {
-            $personal = Personal::with('persona', 'area')->where('estado_registro', 'A')->get();
+            $personal = Personal::with('persona', 'cargo.area.horario', 'planilla')->where('estado_registro', 'A')->get();
             if (!$personal) {
                 return response()->json(['resp' => 'Personal no existentes'], 200);
             }
@@ -38,7 +38,7 @@ class PersonalController extends Controller
     public function getPersonalTransaccion()
     {
         try {
-            $personal = Personal::with(['persona', 'area','salida'])->where('estado_registro', 'A')->whereHas('salida')->get();
+            $personal = Personal::with(['persona', 'area', 'salida'])->where('estado_registro', 'A')->whereHas('salida')->get();
             if (!$personal) {
                 return response()->json(['resp' => 'Personal no existentes'], 200);
             }
@@ -92,9 +92,6 @@ class PersonalController extends Controller
             if (!$request->numero_documento) {
                 return response()->json(['resp' => 'Ingrese el número de Documento'], 500);
             }
-            if (!$request->area_id) {
-                return response()->json(['resp' => 'Seleccione una Área'], 500);
-            }
             $persona = Persona::updateOrCreate([
                 'numero_documento' => $request->numero_documento
             ], [
@@ -103,14 +100,18 @@ class PersonalController extends Controller
                 'apellido_materno' => $request->apellido_materno,
                 'gmail' => $request->gmail,
                 'tipo_documento_id' => $request->tipo_documento_id,
+                'fecha_nacimiento' => $request->fecha_nacimiento,
                 'estado_registro' => 'A',
             ]);
             $personal = Personal::updateOrCreate([
                 'persona_id' => $persona->id,
             ], [
-                'area_id' => $request->area_id,
+                'cargo_id' => $request->cargo_id,
                 'habilidad' => $request->habilidad,
                 'experiencia' => $request->experiencia,
+                'fecha_ingreso' => $request->fecha_ingreso,
+                'planilla_id' => $request->planilla_id,
+                'fecha_ingreso_planilla' => $request->fecha_ingreso_planilla,
                 'estado_registro' => 'A',
             ]);
             DB::commit();

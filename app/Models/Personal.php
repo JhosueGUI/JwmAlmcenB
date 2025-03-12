@@ -2,16 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\RRHH\Asistencia;
+use App\Models\RRHH\Cargo;
+use App\Models\RRHH\Planilla;
 use Illuminate\Database\Eloquent\Model;
 
 class Personal extends Model
 {
     protected $table='personal';
     protected $fillable=[
+        'cargo_id',
+        'planilla_id',
         'persona_id',
-        'area_id',
         'habilidad',
         'experiencia',
+        'fecha_ingreso',
+        'fecha_ingreso_planilla',
         'estado_registro'
     ];
     protected $primaryKey='id';
@@ -42,9 +48,17 @@ class Personal extends Model
     public function combustible(){
         return $this->hasMany(Combustible::class);
     }
-    //pertenece a area (hijo-padre)
-    public function area(){
-        return $this->belongsTo(Area::class,'area_id','id');
+    //pertenece a planilla (hijo-padre)
+    public function planilla(){
+        return $this->belongsTo(Planilla::class,'planilla_id','id');
+    }
+    //le da su id a asistencia(padre-hijo)
+    public function asistencia(){
+        return $this->hasMany(Asistencia::class);
+    }
+    //pertenece a cargo(hijo-padre)
+    public function cargo(){
+        return $this->belongsTo(Cargo::class,'cargo_id','id');
     }
 }
 
