@@ -18,56 +18,45 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class InventarioValorizadoController extends Controller
 {
-    public function get()
-    {
-        try {
-            // Obtener los inventarios valorizados con las relaciones necesarias
-            $inventario_valorizado = InventarioValorizado::with([
-                'inventario.ubicacion',
-                'inventario.estado_operativo',
-                'inventario.producto.articulo.sub_familia.familia',
-                'inventario.producto.unidad_medida',
-            ])->where('estado_registro', 'A')->get();
+    public function get(Request $request)
+{
+    try {
+        // Definir la cantidad de elementos por página (puedes recibirlo desde el frontend)
+        $perPage = $request->input('per_page', 100); // Valor por defecto: 10
 
-            // Verificar si hay inventarios valorizados
-            if ($inventario_valorizado->isEmpty()) {
-                return response()->json(['resp' => 'Inventarios Valorizados no existentes'], 500);
-            }
+        // Obtener los inventarios valorizados con paginación
+        $inventario_valorizado = InventarioValorizado::with([
+            'inventario.ubicacion',
+            'inventario.estado_operativo',
+            'inventario.producto.articulo.sub_familia.familia',
+            'inventario.producto.unidad_medida',
+        ])->where('estado_registro', 'A')->paginate($perPage);
 
-            // Obtener la última transacción de ingreso y salida por cada producto
-            foreach ($inventario_valorizado as $inventario) {
-                $producto = $inventario->inventario->producto;
-
-                // Obtener la última transacción de ingreso
-                $ultimo_ingreso = $producto->transaccion()
-                    ->whereHas('ingreso')
-                    ->with('ingreso')
-                    ->latest()
-                    ->first();
-
-                // Obtener la última transacción de salida
-                $ultima_salida = $producto->transaccion()
-                    ->whereHas('salida')
-                    ->with('salida')
-                    ->latest()
-                    ->first();
-
-                // Crear una colección de transacciones con las últimas de ingreso y salida
-                $transacciones = collect();
-                if ($ultimo_ingreso) {
-                    $transacciones->push($ultimo_ingreso);
-                }
-                if ($ultima_salida) {
-                    $transacciones->push($ultima_salida);
-                }
-
-                $producto->transacciones = $transacciones;
-            }
-            return response()->json(['data' => $inventario_valorizado], 200);
-        } catch (\Exception $e) {
-            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        // Verificar si hay datos
+        if ($inventario_valorizado->isEmpty()) {
+            return response()->json(['resp' => 'Inventarios Valorizados no existentes'], 500);
         }
+
+        // Obtener la última transacción de ingreso y salida por cada producto
+        foreach ($inventario_valorizado as $inventario) {
+            $producto = $inventario->inventario->producto;
+
+            $ultimo_ingreso = $producto->transaccion()->whereHas('ingreso')->with('ingreso')->latest()->first();
+            $ultima_salida = $producto->transaccion()->whereHas('salida')->with('salida')->latest()->first();
+
+            $transacciones = collect();
+            if ($ultimo_ingreso) $transacciones->push($ultimo_ingreso);
+            if ($ultima_salida) $transacciones->push($ultima_salida);
+
+            $producto->transacciones = $transacciones;
+        }
+
+        return response()->json($inventario_valorizado, 200);
+    } catch (\Exception $e) {
+        return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
     }
+}
+
 
 
     public function show($inventario_valorizadoID)
