@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\VIEW\VistaPersona;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AreaController extends Controller
 {
-    public function get()
+    public function get3()
     {
         try {
             $area = Area::where('estado_registro', 'A')->get();
@@ -32,5 +33,9 @@ class AreaController extends Controller
         }catch (\Exception $e) {
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
+    }
+    public function get(){
+        $persona=VistaPersona::all();
+        return response()->json(['data'=>$persona],200);
     }
 }

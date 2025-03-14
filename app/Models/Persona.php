@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\FINANZA\Movimiento;
 use Illuminate\Database\Eloquent\Model;
 
 class Persona extends Model
@@ -30,7 +31,10 @@ class Persona extends Model
     public function personal(){
         return $this->hasMany(Personal::class);
     }
-    
+    //le da su id a movimiento
+    public function movimiento(){
+        return $this->hasMany(Movimiento::class);
+    }
     // //le da su id a Proveedor (padre-hijo)
     // public function proveedor(){
     //     return $this->hasMany(Proveedor::class);

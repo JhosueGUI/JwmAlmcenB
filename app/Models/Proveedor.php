@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\FINANZA\Movimiento;
 use Illuminate\Database\Eloquent\Model;
 
 class Proveedor extends Model
@@ -29,5 +30,9 @@ class Proveedor extends Model
     //le da su id a proveedor_producto(padre-hijo)
     public function proveedor_producto(){
         return $this->hasMany(Proveedor::class);
+    }
+    //le da su id a movimiento
+    public function movimiento(){
+        return $this->hasMany(Movimiento::class);
     }
 }
