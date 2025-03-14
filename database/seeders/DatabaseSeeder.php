@@ -27,6 +27,15 @@ class DatabaseSeeder extends Seeder
         $this->call(DestinoCombustibleSeeder::class);
         // $this->call(ProveedorSeeder::class);
         // $this->call(InventarioValorizadoSeeder::class);
-        
+        //Finanza
+        $this->call([\Database\Seeders\FINANZA\EmpresaSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\EstadoComprobanteSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\ClienteSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\RendicionSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\SustentoSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\MonedaSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\ModoSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\CategoriaSeeder::class]);
+        $this->call([\Database\Seeders\FINANZA\SubCategoriaSeeder::class]);
     }
 }

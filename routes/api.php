@@ -22,7 +22,18 @@ use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\SubFamiliaController;
 use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\DestinoCombustibleController;
+use App\Http\Controllers\Finanza\ClienteController;
+use App\Http\Controllers\Finanza\EmpresaController;
+use App\Http\Controllers\Finanza\EstadoComprobanteController;
+use App\Http\Controllers\Finanza\ModoController;
+use App\Http\Controllers\Finanza\MonedaController;
+use App\Http\Controllers\Finanza\MovimientoController;
+use App\Http\Controllers\Finanza\PersonaController;
+use App\Http\Controllers\Finanza\ProveedorController as FinanzaProveedorController;
+use App\Http\Controllers\Finanza\RendicionController;
+use App\Http\Controllers\Finanza\SubCategoriaController;
 use App\Http\Controllers\PlanillaController;
+use App\Http\Controllers\ServicioExterno\ApiTerceroController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\Cors;
@@ -39,7 +50,7 @@ Route::group(['prefix' => 'orden_compra'], function () {
     Route::get('/exportar_inventario', [InventarioValorizadoController::class, 'exportarInventario']);
 });
 Route::group(['prefix' => 'reporte'], function () {
-    Route::get('/consumo/placa',[SalidaCombustibleController::class,'ExportarConsumoPorPlaca']);
+    Route::get('/consumo/placa', [SalidaCombustibleController::class, 'ExportarConsumoPorPlaca']);
 });
 Route::group(['middleware' => [Cors::class]], function () {
     Route::post('/login', [AuthController::class, 'authenticate']);
@@ -116,22 +127,22 @@ Route::group(['middleware' => [Cors::class]], function () {
                 Route::delete('/delete/{idSalida}', [SalidaController::class, 'delete']);
                 Route::post('/importar', [SalidaController::class, 'importarSalida']);
             });
-            Route::group(['prefix'=>'salida_combustible'],function(){
-                Route::post('/create',[SalidaCombustibleController::class,'crearSalidaCombustible']);
-                Route::get('/get',[SalidaCombustibleController::class,'listarSalidaCombustible']);
-                Route::get('/get/combustible',[SalidaCombustibleController::class,'GetStockCombustible']);
-                Route::post('/importar',[SalidaCombustibleController::class,'subirSalidaCombustible']);
-                Route::delete('/delete/{idSalida}',[SalidaCombustibleController::class,'elimarSalidaCombustible']);
-                Route::post('/update/{idSalida}',[SalidaCombustibleController::class,'EditarSalidaCombustible']);
+            Route::group(['prefix' => 'salida_combustible'], function () {
+                Route::post('/create', [SalidaCombustibleController::class, 'crearSalidaCombustible']);
+                Route::get('/get', [SalidaCombustibleController::class, 'listarSalidaCombustible']);
+                Route::get('/get/combustible', [SalidaCombustibleController::class, 'GetStockCombustible']);
+                Route::post('/importar', [SalidaCombustibleController::class, 'subirSalidaCombustible']);
+                Route::delete('/delete/{idSalida}', [SalidaCombustibleController::class, 'elimarSalidaCombustible']);
+                Route::post('/update/{idSalida}', [SalidaCombustibleController::class, 'EditarSalidaCombustible']);
             });
-            Route::group(['prefix'=>'destino_combustible'],function(){
-                Route::get('/get',[DestinoCombustibleController::class,'getDestinoCombustible']);
+            Route::group(['prefix' => 'destino_combustible'], function () {
+                Route::get('/get', [DestinoCombustibleController::class, 'getDestinoCombustible']);
             });
-            Route::group(['prefix'=>'planilla'],function(){
-                Route::get('/get',[PlanillaController::class,'get']);
+            Route::group(['prefix' => 'planilla'], function () {
+                Route::get('/get', [PlanillaController::class, 'get']);
             });
-            Route::group(['prefix'=>'cargo'],function(){
-                Route::get('/get',[CargoController::class,'get']);
+            Route::group(['prefix' => 'cargo'], function () {
+                Route::get('/get', [CargoController::class, 'get']);
             });
             Route::group(['prefix' => 'flota'], function () {
                 Route::get('/get', [FlotaController::class, 'get']);
@@ -186,6 +197,52 @@ Route::group(['middleware' => [Cors::class]], function () {
                     Route::get('/filtro', [ReporteImplementoController::class, 'reporteFiltro']);
                     Route::get('/filtro/mes', [ReporteImplementoController::class, 'reporteFiltroMes']);
                 });
+            });
+        });
+        Route::group(['prefix' => 'finanza'], function () {
+            Route::group(['prefix' => 'movimiento'], function () {
+                Route::get('/get', [MovimientoController::class, 'get']);
+                Route::post('/create', [MovimientoController::class, 'create']);
+                Route::post('/update/{idMovimiento}', [MovimientoController::class, 'editarMovimiento']);
+                Route::post('/trazabilidad/{idMovimiento}', [MovimientoController::class, 'crearTrazabilidad']);
+            });
+            Route::group(['prefix' => 'estado-comprobante'], function () {
+                Route::get('/get', [EstadoComprobanteController::class, 'GetEstado']);
+            });
+            Route::group(['prefix' => 'rendicion'], function () {
+                Route::get('/get', [RendicionController::class, 'getRendicion']);
+            });
+            Route::group(['prefix' => 'empresa'], function () {
+                Route::get('/get', [EmpresaController::class, 'getEmpresa']);
+            });
+            Route::group(['prefix' => 'modo'], function () {
+                Route::get('/get', [ModoController::class, 'getModo']);
+            });
+            Route::group(['prefix' => 'moneda'], function () {
+                Route::get('/get', [MonedaController::class, 'getMoneda']);
+            });
+            Route::group(['prefix' => 'cliente'], function () {
+                Route::get('/get', [ClienteController::class, 'getCliente']);
+                Route::post('/create', [ClienteController::class, 'create']);
+            });
+            Route::group(['prefix' => 'sub_categoria'], function () {
+                Route::get('/get', [SubCategoriaController::class, 'getSubCategoria']);
+            });
+            Route::group(['prefix' => 'persona'], function () {
+                Route::post('/create', [PersonaController::class, 'create']);
+                Route::get('/get', [PersonaController::class, 'get']);
+            });
+            Route::group(['prefix' => 'proveedor'], function () {
+                Route::post('/create', [FinanzaProveedorController::class, 'create']);
+                Route::get('/get', [FinanzaProveedorController::class, 'get']);
+            });
+        });
+        Route::group(['prefix' => 'servicio'], function () {
+            Route::group(['prefix' => 'persona_natural'], function () {
+                Route::get('/get/{dni}', [ApiTerceroController::class, 'ObtenerPersonalApi']);
+            });
+            Route::group(['prefix' => 'persona_juridica'], function () {
+                Route::get('/get/{ruc}', [ApiTerceroController::class, 'ObtenerProveedorApi']);
             });
         });
     });

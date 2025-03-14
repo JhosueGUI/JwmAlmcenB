@@ -448,7 +448,7 @@ class OrdenDeCompraController extends Controller
         try {
             $orden_compra = OrdenCompra::where('estado_registro', 'A')->orderBy('id', 'desc')->first();
             if (!$orden_compra) {
-                return response()->json(['resp' => 1213], 200);
+                return response()->json(['resp' => 1215], 200);
             };
             $orden_compra_numero = $orden_compra->numero_orden;
             $orden_compra_numero++;
