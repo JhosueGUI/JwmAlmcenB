@@ -21,7 +21,7 @@ class InventarioValorizadoController extends Controller
     public function get(Request $request)
     {
         try {
-            $perPage = $request->input('per_page', 50);
+            // $perPage = $request->input('per_page', 50);
 
             // Obtener los inventarios valorizados con relaciones optimizadas
             $inventario_valorizado = InventarioValorizado::with([
@@ -48,8 +48,8 @@ class InventarioValorizadoController extends Controller
                         ->latest();
                 }
             ])
-                ->where('estado_registro', 'A')
-                ->paginate($perPage);
+                ->where('estado_registro', 'A')->get();
+                // ->paginate($perPage);
 
             // Verificar si hay datos
             if ($inventario_valorizado->isEmpty()) {
