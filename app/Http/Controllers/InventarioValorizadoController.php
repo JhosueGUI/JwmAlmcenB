@@ -26,15 +26,15 @@ class InventarioValorizadoController extends Controller
             // Obtener los inventarios valorizados con relaciones optimizadas
             $inventario_valorizado = InventarioValorizado::with([
                 'inventario' => function ($query) {
-                    $query->select('id', 'ubicacion_id', 'estado_operativo_id', 'producto_id','total_ingreso','total_salida','stock_logico','demanda_mensual');
+                    $query->select('id', 'ubicacion_id', 'estado_operativo_id', 'producto_id', 'total_ingreso', 'total_salida', 'stock_logico', 'demanda_mensual');
                 },
                 'inventario.ubicacion:id,codigo_ubicacion',
                 'inventario.estado_operativo:id,nombre',
                 'inventario.producto' => function ($query) {
-                    $query->select('id', 'articulo_id', 'unidad_medida_id','SKU');
+                    $query->select('id', 'articulo_id', 'unidad_medida_id', 'SKU');
                 },
                 'inventario.producto.articulo' => function ($query) {
-                    $query->select('id', 'sub_familia_id','nombre','precio_soles','precio_dolares');
+                    $query->select('id', 'sub_familia_id', 'nombre', 'precio_soles', 'precio_dolares');
                 },
                 'inventario.producto.articulo.sub_familia' => function ($query) {
                     $query->select('id', 'familia_id', 'nombre');
@@ -49,14 +49,14 @@ class InventarioValorizadoController extends Controller
                 }
             ])
                 ->where('estado_registro', 'A')->get();
-                // ->paginate($perPage);
+            // ->paginate($perPage);
 
             // Verificar si hay datos
             if ($inventario_valorizado->isEmpty()) {
                 return response()->json(['resp' => 'Inventarios Valorizados no existentes'], 500);
             }
 
-            return response()->json($inventario_valorizado, 200);
+            return response()->json(['data' => $inventario_valorizado], 200);
         } catch (\Exception $e) {
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
