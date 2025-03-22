@@ -60,7 +60,7 @@
                 @foreach ($salida['detalle'] as $detalle)
                     <tr>
                         <td>{{ $salida['placa'] }}</td>
-                        <td>{{ $detalle['fecha']}}</td>
+                        <td>{{ \Carbon\Carbon::parse($detalle['fecha'])->format('d/m/y') }}</td>
                         <td>{{ $detalle['kilometraje']}}</td>
                         <td>{{ $detalle['horometro']}}</td>
                         <td>{{ $detalle['personal'] }}</td>
