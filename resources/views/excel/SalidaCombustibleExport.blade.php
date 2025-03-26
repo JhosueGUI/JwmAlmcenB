@@ -38,7 +38,7 @@
                 <th><strong>Combustible Ruta</strong></th>
                 <th><strong>Precio Unitario Soles</strong></th>
                 <th><strong>Precio Total Soles</strong></th>
-                <th></th>
+                <th><strong>Precio Total IGV</strong></th>
                 <th></th>
                 <th></th>
                 <th></th>
@@ -60,7 +60,7 @@
                 @foreach ($salida['detalle'] as $detalle)
                     <tr>
                         <td>{{ $salida['placa'] }}</td>
-                        <td>{{ \Carbon\Carbon::parse($detalle['fecha'])->format('d/m/y') }}</td>
+                        <td>{{ $detalle['fecha'] }}</td>
                         <td>{{ $detalle['kilometraje']}}</td>
                         <td>{{ $detalle['horometro']}}</td>
                         <td>{{ $detalle['personal'] }}</td>
@@ -68,7 +68,7 @@
                         <td>{{ $detalle['numero_salida_ruta'] }}</td>
                         <td>S/. {{ $detalle['precio_unitario_soles'] }}</td>
                         <td>S/. {{ $detalle['precio_total_soles'] }}</td>
-                        <td></td>
+                        <td>S/. {{ $detalle['precio_total_igv'] }}</td>
                         <td></td>
                         <td></td>
                         <td></td>

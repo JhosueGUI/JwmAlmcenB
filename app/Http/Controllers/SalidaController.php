@@ -22,13 +22,25 @@ class SalidaController extends Controller
     public function get()
     {
         try {
+            // $salida = Salida::with([
+            //     'personal.persona',
+            //     'transaccion.producto.articulo.sub_familia.familia',
+            //     'transaccion.producto.unidad_medida',
+            //     'transaccion.producto.inventario.inventario_valorizado'
+            // ])->where('estado_registro', 'A')->get();
+            
             $salida = Salida::with([
-                'personal.persona',
-                'transaccion.producto.articulo.sub_familia.familia',
-                'transaccion.producto.unidad_medida',
-                'transaccion.producto.inventario.inventario_valorizado'
+                'personal:id,persona_id',
+                'personal.persona:id,nombre,apellido_paterno,apellido_materno',
+                'transaccion:id,marca,tipo_operacion,producto_id,precio_unitario_soles,precio_total_soles,precio_unitario_dolares,precio_total_dolares,observaciones',
+                'transaccion.producto:id,SKU,articulo_id,unidad_medida_id',
+                'transaccion.producto.unidad_medida:id,nombre',
+                'transaccion.producto.inventario:id,producto_id,stock_logico',
+                'transaccion.producto.articulo:id,nombre,precio_dolares,precio_soles,sub_familia_id',
+                'transaccion.producto.articulo.sub_familia:id,nombre,familia_id',
+                'transaccion.producto.articulo.sub_familia.familia:id,familia',
             ])->where('estado_registro', 'A')->get();
-
+            
             if (!$salida) {
                 return response()->json(['resp' => 'Salidas no Disponibles'], 500);
             }
