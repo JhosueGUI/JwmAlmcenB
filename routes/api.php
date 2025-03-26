@@ -4,6 +4,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CargoController;
+use App\Http\Controllers\Combustible\GrifoController;
 use App\Http\Controllers\FlotaController;
 use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\InventarioValorizadoController;
@@ -134,6 +135,10 @@ Route::group(['middleware' => [Cors::class]], function () {
                 Route::post('/importar', [SalidaCombustibleController::class, 'subirSalidaCombustible']);
                 Route::delete('/delete/{idSalida}', [SalidaCombustibleController::class, 'elimarSalidaCombustible']);
                 Route::post('/update/{idSalida}', [SalidaCombustibleController::class, 'EditarSalidaCombustible']);
+            });
+            Route::group(['prefix' => 'grifo'], function () {
+                Route::get('/get', [GrifoController::class, 'get']);
+                Route::post('/create', [GrifoController::class, 'create']);
             });
             Route::group(['prefix' => 'destino_combustible'], function () {
                 Route::get('/get', [DestinoCombustibleController::class, 'getDestinoCombustible']);

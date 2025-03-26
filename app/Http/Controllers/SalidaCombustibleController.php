@@ -6,6 +6,7 @@ use App\Exports\SalidaCombustibleExport;
 use App\Imports\SalidaCombustibleImport;
 use App\Models\Articulo;
 use App\Models\Combustible;
+use App\Models\COMBUSTIBLE\Grifo;
 use App\Models\DestinoCombustible;
 use App\Models\Flota;
 use App\Models\Inventario;
@@ -42,9 +43,6 @@ class SalidaCombustibleController extends Controller
             if (!$producto) {
                 return response()->json(["error" => "Producto no encontrado"], 404);
             }
-            //#region verificar existencia de flota
-            // $flota = Flota::where('estado_registro', 'A')->where('id', $request->flota_id)->first();
-            //verificar existencia de personal
             $personal = Personal::where('estado_registro', 'A')->where('id', $request->personal_id)->first();
             if (!$personal) {
                 return response()->json(['resp' => 'Personal no Seleccionado'], 500);
@@ -57,6 +55,14 @@ class SalidaCombustibleController extends Controller
             //verificar si se ingreso el numero de salida
             if (!$request->numero_salida_combustible && !$request->numero_salida_ruta) {
                 return response()->json(['resp' => 'Ingrese el Número de Salida'], 500);
+            }
+            $grifo = Grifo::where('estado_registro', 'A')->where('id', $request->grifo_id)->first();
+            if (!$grifo) {
+                return response()->json(['resp' => 'Grifo no Seleccionado'], 500);
+            }
+            $flota = Flota::where('estado_registro', 'A')->where('id', $request->flota_id)->first();
+            if (!$flota) {
+                return response()->json(['resp' => 'Flota no Seleccionado'], 500);
             }
             //
 
@@ -80,6 +86,7 @@ class SalidaCombustibleController extends Controller
                 'marca' => $request->marca,
                 'observaciones' => $request->observaciones,
             ]);
+            $fechaLocal = Carbon::parse($request->fecha)->format('d-m-y');
             if ($request->numero_salida_combustible) {
                 //traemos el inventario del producto
                 $inventario = Inventario::where('estado_registro', 'A')->where('producto_id', $producto->id)->first();
@@ -131,10 +138,10 @@ class SalidaCombustibleController extends Controller
                 }
 
                 Combustible::create([
-                    'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
+                    'fecha' => $fechaLocal,
                     'destino_combustible_id' => $destino->id,
                     'personal_id' => $personal->id,
-                    'flota_id' => $request->flota_id,
+                    'flota_id' => $flota->id,
                     'transaccion_id' => $transaccion->id,
                     'numero_salida_stock' => $numero_salida_combustible,
                     //
@@ -162,15 +169,21 @@ class SalidaCombustibleController extends Controller
                     return response()->json(['resp' => 'Precio Unitario Incorrecto'], 500);
                 }
                 $precio_total_soles = $numero_salida_ruta * $precio_unitario_soles;
+                $precio_igv = $precio_unitario_soles / 1.18;
+                $precio_total_igv = round($precio_total_soles / 1.18, 1);
+
 
                 Combustible::create([
-                    'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
+                    'fecha' => $fechaLocal,
                     'destino_combustible_id' => $destino->id,
                     'personal_id' => $personal->id,
-                    'flota_id' => $request->flota_id,
+                    'flota_id' => $flota->id,
+                    'grifo_id' => $grifo->id,
                     'tipo_comprobante' => $request->tipo_comprobante,
                     'numero_comprobante' => $request->numero_comprobante,
                     'numero_salida_ruta' => $numero_salida_ruta,
+                    'precio_unitario_igv' => $precio_igv,
+                    'precio_total_igv' => $precio_total_igv,
                     'precio_unitario_soles' => $precio_unitario_soles,
                     'precio_total_soles' => $precio_total_soles,
                     'precinto_nuevo' => $request->precinto_nuevo,
@@ -233,6 +246,7 @@ class SalidaCombustibleController extends Controller
                                 'transaccion_id' => $item->transaccion_id,
                                 'precio_unitario_soles' => $item->precio_unitario_soles,
                                 'precio_total_soles' => $item->precio_total_soles,
+                                'precio_total_igv'=>$item->precio_total_igv,
                                 'numero_salida_ruta' => $item->numero_salida_ruta,
                                 'numero_salida_stock' => $item->numero_salida_stock,
                                 'kilometraje' => $item->kilometraje,

@@ -25,20 +25,12 @@ class InventarioValorizadoController extends Controller
 
             // Obtener los inventarios valorizados con relaciones optimizadas
             $inventario_valorizado = InventarioValorizado::with([
-                'inventario' => function ($query) {
-                    $query->select('id', 'ubicacion_id', 'estado_operativo_id', 'producto_id', 'total_ingreso', 'total_salida', 'stock_logico', 'demanda_mensual');
-                },
+                'inventario:id,ubicacion_id,estado_operativo_id,producto_id,total_ingreso,total_salida,stock_logico,demanda_mensual',
                 'inventario.ubicacion:id,codigo_ubicacion',
                 'inventario.estado_operativo:id,nombre',
-                'inventario.producto' => function ($query) {
-                    $query->select('id', 'articulo_id', 'unidad_medida_id', 'SKU');
-                },
-                'inventario.producto.articulo' => function ($query) {
-                    $query->select('id', 'sub_familia_id', 'nombre', 'precio_soles', 'precio_dolares');
-                },
-                'inventario.producto.articulo.sub_familia' => function ($query) {
-                    $query->select('id', 'familia_id', 'nombre');
-                },
+                'inventario.producto:id,articulo_id,unidad_medida_id,SKU',
+                'inventario.producto.articulo:id,sub_familia_id,nombre,precio_soles,precio_dolares',
+                'inventario.producto.articulo.sub_familia:id,familia_id,nombre',
                 'inventario.producto.articulo.sub_familia.familia:id,familia',
                 'inventario.producto.unidad_medida:id,nombre',
                 'inventario.producto.transaccion' => function ($query) {

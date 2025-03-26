@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AreaSeeder::class);
         $this->call(\Database\Seeders\RRHH\PlanillaSeeder::class);
         $this->call(\Database\Seeders\RRHH\CargoSeeder::class);
+        // $this->call(\Database\Seeders\COMBUSTIBLE\GrifoSeeder::class);
         $this->call(FamiliaSeeder::class);
         $this->call(SubFamiliaSeeder::class);
         $this->call(UnidadMedidaSeeder::class);

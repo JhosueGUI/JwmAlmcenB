@@ -29,13 +29,13 @@ class SalidaCombustibleExport implements FromView, ShouldAutoSize, WithEvents
             AfterSheet::class => function (AfterSheet $event) {
                 // Definir la tabla en Excel
                 $lastRow = $event->sheet->getDelegate()->getHighestRow();
-                $event->sheet->getDelegate()->setAutoFilter('A2:I' . $lastRow);
+                $event->sheet->getDelegate()->setAutoFilter('A2:J' . $lastRow);
 
                 // Proteger la hoja
                 $event->sheet->getDelegate()->getProtection()->setPassword('JWM'); // Establecer una contraseña
                 $event->sheet->getDelegate()->getProtection()->setSheet(true); // Activar la protección de la hoja
 
-                $event->sheet->getStyle('A1:I'.$lastRow)->applyFromArray([
+                $event->sheet->getStyle('A1:J'.$lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,  // Establecer borde grueso
@@ -65,7 +65,7 @@ class SalidaCombustibleExport implements FromView, ShouldAutoSize, WithEvents
                     $color = $colors[($row - 2) % count($colors)];
 
                     // Aplicar el color a las celdas de la fila
-                    $event->sheet->getStyle("A{$row}:I{$row}")->applyFromArray([
+                    $event->sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
                         'fill' => [
                             'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                             'startColor' => [
@@ -121,7 +121,7 @@ class SalidaCombustibleExport implements FromView, ShouldAutoSize, WithEvents
                         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
                     ],
                 ]);
-                $event->sheet->getStyle('H2:I2')->applyFromArray([
+                $event->sheet->getStyle('H2:J2')->applyFromArray([
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                         'startColor' => [
