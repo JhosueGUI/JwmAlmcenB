@@ -64,91 +64,99 @@ class SalidaController extends Controller
         }
     }
     public function create(Request $request)
-    {
-        try {
-            DB::beginTransaction();
-            //Traemos al producto segun el SKU
-            $producto = Producto::where('estado_registro', 'A')->where('SKU', $request->SKU)->first();
-            if (!$producto) {
-                return response()->json(['resp' => 'Seleccione un Producto'], 500);
+{
+    try {
+        DB::beginTransaction();
+
+        $productos = $request->input('productos');
+
+        if (!is_array($productos) || empty($productos)) {
+            return response()->json(['resp' => 'Se requiere un array de productos válido'], 400);
+        }
+
+        foreach ($productos as $productoData) {
+            // Validaciones para cada producto
+            if (!isset($productoData['SKU'])) {
+                return response()->json(['resp' => 'SKU del producto es requerido'], 400);
             }
-            //Traemos al articulo que pertenece al producto
+
+            if (!isset($productoData['numero_salida'])) {
+                return response()->json(['resp' => 'Número de salida es requerido'], 400);
+            }
+
+            // Traer producto
+            $producto = Producto::where('estado_registro', 'A')->where('SKU', $productoData['SKU'])->first();
+            if (!$producto) {
+                return response()->json(['resp' => 'Producto no encontrado: ' . $productoData['SKU']], 404);
+            }
+
+            // Traer artículo
             $articulo = Articulo::where('estado_registro', 'A')->where('id', $producto->articulo_id)->first();
 
-            //ingresamos el  numero de salida
-            $numero_salida = $request->numero_salida;
+            // Calcular precios
+            $precio_total_soles = $productoData['numero_salida'] * $articulo->precio_soles;
+            $precio_total_dolares = $productoData['numero_salida'] * $articulo->precio_dolares;
 
-            if (!$numero_salida) {
-                return response()->json(['resp' => 'Ingrese el número de Salida'], 500);
-            }
-            //calculamos el precio total segun el numero de salida
-            $precio_total_soles = $numero_salida * $articulo->precio_soles;
-            $precio_total_dolares = $numero_salida * $articulo->precio_dolares;
-
-            //creamos Transaccion
+            // Crear transacción
             $transaccion = Transaccion::create([
                 'producto_id' => $producto->id,
-                'tipo_operacion' => $request->tipo_operacion,
+                'tipo_operacion' => $request->input('tipo_operacion'),
                 'precio_unitario_soles' => $articulo->precio_soles,
                 'precio_unitario_dolares' => $articulo->precio_dolares,
                 'precio_total_soles' => $precio_total_soles,
                 'precio_total_dolares' => $precio_total_dolares,
-                'marca' => $request->marca,
-                'observaciones' => $request->observaciones
+                'marca' => $productoData['marca'] ?? null,
+                'observaciones' => $request->input('observaciones'),
             ]);
 
-            //traemos el inventario del producto
+            // Actualizar inventario
             $inventario = Inventario::where('estado_registro', 'A')->where('producto_id', $producto->id)->first();
-
-            //traemos el total de salida
-            $t_salida = $inventario->total_salida;
-            //sumamos el total de salida con la salida nueva
-            $total_salida = $numero_salida + $t_salida;
-
-            //calculamos el stock logico 
-            $total_ingreso = $inventario->total_ingreso;
-            $stock_logico = $total_ingreso - $total_salida;
+            $total_salida = $inventario->total_salida + $productoData['numero_salida'];
+            $stock_logico = $inventario->total_ingreso - $total_salida;
 
             $inventario->update([
                 'total_salida' => $total_salida,
-                'stock_logico' => $stock_logico
+                'stock_logico' => $stock_logico,
             ]);
 
-            //traemos al inventario_valorizado
+            // Actualizar inventario valorizado
             $inventario_valorizado = InventarioValorizado::where('estado_registro', 'A')->where('inventario_id', $inventario->id)->first();
-            //calculamos el valor de inventario
             $valor_inventario_soles = $stock_logico * $articulo->precio_soles;
             $valor_inventario_dolares = $stock_logico * $articulo->precio_dolares;
 
             $inventario_valorizado->update([
                 'valor_inventario_soles' => $valor_inventario_soles,
-                'valor_inventario_dolares' => $valor_inventario_dolares
+                'valor_inventario_dolares' => $valor_inventario_dolares,
             ]);
-            if (!$request->personal_id) {
-                return response()->json(['resp' => 'Seleccione un Personal'], 500);
-            }
-            $salida = Salida::create([
+
+            // Crear salida
+            Salida::create([
                 'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
-                'vale' => $request->vale,
+                'vale' => $request->input('vale'),
                 'transaccion_id' => $transaccion->id,
-                'destino' => $request->destino,
-                'personal_id' => $request->personal_id,
-                'unidad' => $request->unidad,
-                'duracion_neumatico' => $request->duracion_neumatico,
-                'kilometraje_horometro' => $request->kilometraje_horometro,
-                'fecha_vencimiento' => $request->fecha_vencimiento,
-                'numero_salida' => $numero_salida
+                'destino' => $request->input('destino'),
+                'personal_id' => $request->input('personal_id'),
+                'unidad' => $request->input('unidad'),
+                'duracion_neumatico' => $request->input('duracion_neumatico'),
+                'kilometraje_horometro' => $request->input('kilometraje_horometro'),
+                'fecha_vencimiento' => $request->input('fecha_vencimiento'),
+                'numero_salida' => $productoData['numero_salida'],
             ]);
-            if ($numero_salida > $stock_logico + $numero_salida) {
-                return response()->json(['resp' => 'Stock Insuficiente del Producto Seleccionado '], 500);
+
+            // Verificar stock
+            if ($productoData['numero_salida'] > $stock_logico + $productoData['numero_salida']) {
+                return response()->json(['resp' => 'Stock insuficiente para el producto: ' . $productoData['SKU']], 400);
             }
-            DB::commit();
-            return response()->json(['resp' => 'Salida registrada correctamente'], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
+
+        DB::commit();
+        return response()->json(['resp' => 'Salidas registradas correctamente'], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
     }
+}
     public function update(Request $request, $idSalida)
     {
         try {
