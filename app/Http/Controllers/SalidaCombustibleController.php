@@ -56,10 +56,7 @@ class SalidaCombustibleController extends Controller
             if (!$request->numero_salida_combustible && !$request->numero_salida_ruta) {
                 return response()->json(['resp' => 'Ingrese el Número de Salida'], 500);
             }
-            $grifo = Grifo::where('estado_registro', 'A')->where('id', $request->grifo_id)->first();
-            if (!$grifo) {
-                return response()->json(['resp' => 'Grifo no Seleccionado'], 500);
-            }
+
             $flota = Flota::where('estado_registro', 'A')->where('id', $request->flota_id)->first();
             if (!$flota) {
                 return response()->json(['resp' => 'Flota no Seleccionado'], 500);
@@ -162,7 +159,10 @@ class SalidaCombustibleController extends Controller
                     return response()->json(['resp' => 'Stock Insuficiente del Producto Seleccionado '], 500);
                 }
             } else if ($request->numero_salida_ruta) {
-
+                $grifo = Grifo::where('estado_registro', 'A')->where('id', $request->grifo_id)->first();
+                if (!$grifo) {
+                    return response()->json(['resp' => 'Grifo no Seleccionado'], 500);
+                }
                 $numero_salida_ruta = $request->numero_salida_ruta;
                 $precio_unitario_soles = $request->precio_unitario_soles;
                 if ($precio_unitario_soles <= 0) {
@@ -246,7 +246,7 @@ class SalidaCombustibleController extends Controller
                                 'transaccion_id' => $item->transaccion_id,
                                 'precio_unitario_soles' => $item->precio_unitario_soles,
                                 'precio_total_soles' => $item->precio_total_soles,
-                                'precio_total_igv'=>$item->precio_total_igv,
+                                'precio_total_igv' => $item->precio_total_igv,
                                 'numero_salida_ruta' => $item->numero_salida_ruta,
                                 'numero_salida_stock' => $item->numero_salida_stock,
                                 'kilometraje' => $item->kilometraje,
