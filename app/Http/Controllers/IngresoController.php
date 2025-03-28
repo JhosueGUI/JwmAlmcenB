@@ -25,12 +25,23 @@ class IngresoController extends Controller
     {
         try {
             $ingresos = Ingreso::with([
-                'transaccion.producto.articulo.sub_familia.familia',
-                'transaccion.producto.unidad_medida',
-                'transaccion.producto.inventario',
-                'transaccion.producto.proveedor_producto.proveedor',
-            ])->where('estado_registro', 'A')->get();
-            // Recorrer cada ingreso y ajustar la estructura de proveedor_producto
+                'transaccion:id,precio_unitario_soles,precio_total_soles,precio_unitario_dolares,precio_total_dolares,observaciones,tipo_operacion,marca,producto_id',
+                'transaccion.producto:id,SKU,articulo_id,unidad_medida_id',
+                'transaccion.producto.unidad_medida:id,nombre',
+                'transaccion.producto.proveedor_producto:id,proveedor_id,producto_id,identificador',
+                'transaccion.producto.proveedor_producto.proveedor:id,razon_social',
+                'transaccion.producto.articulo:id,nombre,precio_dolares,precio_soles,sub_familia_id',
+                'transaccion.producto.articulo.sub_familia:id,nombre,familia_id',
+                'transaccion.producto.articulo.sub_familia.familia:id,familia',
+                'transaccion.producto.inventario:id,producto_id,stock_logico',
+            ])->get();
+            // $ingresos = Ingreso::with([
+            //     'transaccion.producto.articulo.sub_familia.familia',
+            //     'transaccion.producto.unidad_medida',
+            //     'transaccion.producto.inventario',
+            //     'transaccion.producto.proveedor_producto.proveedor',
+            // ])->where('estado_registro', 'A')->get();
+            // // Recorrer cada ingreso y ajustar la estructura de proveedor_producto
             foreach ($ingresos as $ingreso) {
                 $transaccion = $ingreso->transaccion;
                 // Filtrar proveedor_producto por identificador
@@ -52,111 +63,108 @@ class IngresoController extends Controller
     {
         try {
             DB::beginTransaction();
+
             // Verificar existencia del proveedor
             $proveedor = Proveedor::where('estado_registro', 'A')->find($request->proveedor_id);
             if (!$proveedor) {
                 return response()->json(['resp' => 'Proveedor no seleccionado '], 500);
             }
-            // Verificar existencia del producto
-            $producto = Producto::where('estado_registro', 'A')->where('SKU', $request->SKU)->first();
-            if (!$producto) {
-                return response()->json(['resp' => 'Producto no seleccionado'], 404);
+
+            if (!$request->productos || !is_array($request->productos)) {
+                return response()->json(['resp' => 'Productos no proporcionados o formato incorrecto'], 400);
             }
 
-            //#region de Validaciones
-            if (!$request->numero_ingreso) {
-                return response()->json(['resp' => 'Ingrese el Número de Ingreso'], 500);
-            }
+            foreach ($request->productos as $productoData) {
+                // Verificar existencia del producto
+                $producto = Producto::where('estado_registro', 'A')->where('SKU', $productoData['SKU'])->first();
+                if (!$producto) {
+                    return response()->json(['resp' => 'Producto con SKU ' . $productoData['SKU'] . ' no encontrado'], 404);
+                }
 
-            // Actualizar precios del artículo asociado al producto
+                if (!isset($productoData['numero_ingreso']) || !is_numeric($productoData['numero_ingreso'])) {
+                    return response()->json(['resp' => 'Número de ingreso no válido para SKU ' . $productoData['SKU']], 400);
+                }
 
-            $precio_unitario_soles = $request->precio_unitario_soles;
-            $precio_unitario_dolares = $request->precio_unitario_dolares;
+                $precio_unitario_soles = isset($productoData['precio_unitario_soles']) ? $productoData['precio_unitario_soles'] : null;
+                $precio_unitario_dolares = isset($productoData['precio_unitario_dolares']) ? $productoData['precio_unitario_dolares'] : null;
 
-            $articulo = Articulo::where('estado_registro', 'A')->where('id', $producto->articulo_id)->first();
-            if ($precio_unitario_soles) {
-                $articulo->update([
-                    'precio_soles' => $precio_unitario_soles,
+                // Actualizar precios del artículo asociado al producto
+                $articulo = Articulo::where('estado_registro', 'A')->where('id', $producto->articulo_id)->first();
+                if ($precio_unitario_soles) {
+                    $articulo->update(['precio_soles' => $precio_unitario_soles]);
+                } elseif ($precio_unitario_dolares) {
+                    $conversion = $this->probar($precio_unitario_dolares);
+                    $precio_unitario_soles = $conversion['monto_pen'];
+                    $articulo->update([
+                        'precio_soles' => $precio_unitario_soles,
+                        'precio_dolares' => $precio_unitario_dolares
+                    ]);
+                }
+
+                // Crear transacción
+                $numero_ingreso = $productoData['numero_ingreso'];
+                $precio_total_soles = $numero_ingreso * $precio_unitario_soles;
+                $precio_total_dolares = $numero_ingreso * $precio_unitario_dolares;
+
+                $transaccion = Transaccion::create([
+                    'producto_id' => $producto->id,
+                    'tipo_operacion' => $request->tipo_operacion,
+                    'precio_unitario_soles' => $precio_unitario_soles,
+                    'precio_total_soles' => $precio_total_soles,
+                    'precio_unitario_dolares' => $precio_unitario_dolares,
+                    'precio_total_dolares' => $precio_total_dolares,
+                    'marca' => $productoData['marca'],
+                    'observaciones' => $request->observaciones
                 ]);
-            } else if ($precio_unitario_dolares) {
-                $conversion = $this->probar($precio_unitario_dolares);
-                $precio_unitario_soles = $conversion['monto_pen'];
-                $articulo->update([
-                    'precio_soles' => $precio_unitario_soles,
-                    'precio_dolares' => $precio_unitario_dolares
+
+                // Crear ingreso
+                $ingreso = Ingreso::create([
+                    'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
+                    'guia_remision' => $request->guia_remision,
+                    'tipo_cp' => $request->tipo_cp,
+                    'documento' => $request->documento,
+                    'orden_compra' => $request->orden_compra,
+                    'numero_ingreso' => $numero_ingreso,
+                    'transaccion_id' => $transaccion->id,
+                    'personal_id' => $request->personal_id
+                ]);
+
+                // Obtener inventario
+                $inventario = Inventario::where('estado_registro', 'A')->where('producto_id', $producto->id)->first();
+
+                // Actualizar inventario
+                $total_ingreso = $inventario->total_ingreso + $numero_ingreso;
+                $numero_salida = $inventario->total_salida;
+                $stock_logico = $total_ingreso - $numero_salida;
+
+                $inventario->update([
+                    'total_ingreso' => $total_ingreso,
+                    'total_salida' => $numero_salida,
+                    'stock_logico' => $stock_logico,
+                ]);
+
+                // Obtener inventario_valorizado
+                $inventario_valorizado = InventarioValorizado::where('estado_registro', 'A')->where('inventario_id', $inventario->id)->first();
+
+                // Actualizar inventario valorizado
+                $inventario_valorizado->update([
+                    'valor_unitario_soles' => $precio_unitario_soles,
+                    'valor_unitario_dolares' => $precio_unitario_dolares,
+                    'valor_inventario_soles' => $stock_logico * $precio_unitario_soles,
+                    'valor_inventario_dolares' => $stock_logico * $precio_unitario_dolares,
+                ]);
+
+                // Crear relación entre proveedor y producto
+                ProveedorProducto::create([
+                    'proveedor_id' => $proveedor->id,
+                    'producto_id' => $producto->id,
+                    'identificador' => $transaccion->id
                 ]);
             }
-            // Crear transacción
-
-            $numero_ingreso = $request->numero_ingreso;
-            $precio_total_soles = $numero_ingreso * $precio_unitario_soles;
-            $precio_total_dolares = $numero_ingreso * $precio_unitario_dolares;
-
-            $transaccion = Transaccion::create([
-                'producto_id' => $producto->id,
-                'tipo_operacion' => $request->tipo_operacion,
-                'precio_unitario_soles' => $precio_unitario_soles,
-                'precio_total_soles' => $precio_total_soles,
-                'precio_unitario_dolares' => $precio_unitario_dolares,
-                'precio_total_dolares' => $precio_total_dolares,
-                'marca' => $request->marca,
-                'observaciones' => $request->observaciones
-            ]);
-
-
-            // Crear ingreso
-
-            $ingreso = Ingreso::create([
-                'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
-                'guia_remision' => $request->guia_remision,
-                'tipo_cp' => $request->tipo_cp,
-                'documento' => $request->documento,
-                'orden_compra' => $request->orden_compra,
-                'numero_ingreso' => $numero_ingreso,
-                'transaccion_id' => $transaccion->id,
-                'personal_id' => $request->personal_id
-            ]);
-
-            // Obtener inventario 
-
-            $inventario = Inventario::where('estado_registro', 'A')->where('producto_id', $producto->id)->first();
-
-            // Actualizar inventario
-            // Calcular total de ingreso y stock lógico
-            $total_ingreso = $inventario->total_ingreso + $numero_ingreso;
-            $numero_salida = $inventario->total_salida;
-            $stock_logico = $total_ingreso - $numero_salida;
-
-            $inventario->update([
-                'total_ingreso' => $total_ingreso,
-                'total_salida' => $numero_salida,
-                'stock_logico' => $stock_logico,
-            ]);
-
-
-            // Obtener inventario_valorizado
-
-            $inventario_valorizado = InventarioValorizado::where('estado_registro', 'A')->where('inventario_id', $inventario->id)->first();
-
-            // Actualizar inventario valorizado
-            $inventario_valorizado->update([
-                'valor_unitario_soles' => $precio_unitario_soles,
-                'valor_unitario_dolares' => $precio_unitario_dolares,
-                'valor_inventario_soles' => $stock_logico * $precio_unitario_soles,
-                'valor_inventario_dolares' => $stock_logico * $precio_unitario_dolares,
-            ]);
-
-            // Crear relación entre proveedor y producto
-            $producto_proveedor = ProveedorProducto::create([
-                'proveedor_id' => $proveedor->id,
-                'producto_id' => $producto->id,
-                'identificador' => $transaccion->id
-            ]);
-
 
             DB::commit();
 
-            return response()->json(["resp" => "Ingreso creada exitosamente"], 200);
+            return response()->json(["resp" => "Ingresos creados exitosamente"], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
