@@ -80,7 +80,7 @@ class SalidaCombustibleController extends Controller
                 'marca' => $request->marca,
                 'observaciones' => $request->observaciones,
             ]);
-            $fechaLocal = Carbon::parse($request->fecha)->format('d-m-y');
+            $fechaLocal = Carbon::parse($request->fecha)->format('Y-m-d');
             if ($request->numero_salida_combustible) {
                 //traemos el inventario del producto
                 $inventario = Inventario::where('estado_registro', 'A')->where('producto_id', $producto->id)->first();
