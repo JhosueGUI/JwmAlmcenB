@@ -39,6 +39,7 @@
                 <th><strong>Precio Unitario Soles</strong></th>
                 <th><strong>Precio Total Soles</strong></th>
                 <th><strong>Precio Total IGV</strong></th>
+                <th><strong>Observación</strong></th>
                 <th></th>
                 <th></th>
                 <th></th>
@@ -48,7 +49,6 @@
                 <th><strong>Resultado</strong></th>
                 <th><strong>Precinto Nuevo</strong></th>
                 <th><strong>Precinto Anterior</strong></th>
-                <th><strong>Observación</strong></th>
 
 
 
@@ -69,6 +69,7 @@
                         <td>{{ $detalle['precio_unitario_soles'] }}</td>
                         <td>{{ $detalle['precio_total_soles'] }}</td>
                         <td>{{ $detalle['precio_total_igv'] }}</td>
+                        <td>{{$detalle['observacion']}}</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -78,7 +79,6 @@
                         <td>{{$detalle['resultado']}}</td>
                         <td>{{$detalle['precinto_nuevo']}}</td>
                         <td>{{$detalle['precinto_anterior']}}</td>
-                        <td>{{$detalle['observacion']}}</td>
 
                     </tr>
                 @endforeach
