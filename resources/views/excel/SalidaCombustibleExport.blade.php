@@ -66,9 +66,9 @@
                         <td>{{ $detalle['personal'] }}</td>
                         <td>{{ $detalle['numero_salida_stock'] }}</td>
                         <td>{{ $detalle['numero_salida_ruta'] }}</td>
-                        <td>S/. {{ $detalle['precio_unitario_soles'] }}</td>
-                        <td>S/. {{ $detalle['precio_total_soles'] }}</td>
-                        <td>S/. {{ $detalle['precio_total_igv'] }}</td>
+                        <td>{{ $detalle['precio_unitario_soles'] }}</td>
+                        <td>{{ $detalle['precio_total_soles'] }}</td>
+                        <td>{{ $detalle['precio_total_igv'] }}</td>
                         <td></td>
                         <td></td>
                         <td></td>
