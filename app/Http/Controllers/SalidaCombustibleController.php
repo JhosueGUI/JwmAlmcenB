@@ -58,9 +58,6 @@ class SalidaCombustibleController extends Controller
             }
 
             $flota = Flota::where('estado_registro', 'A')->where('id', $request->flota_id)->first();
-            if (!$flota) {
-                return response()->json(['resp' => 'Flota no Seleccionado'], 500);
-            }
             //
 
             //traemos el articulo
