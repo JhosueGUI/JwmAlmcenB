@@ -223,7 +223,7 @@ class SalidaCombustibleController extends Controller
             $fecha_fin = $request->fecha_fin;
             $placa_solicitada = $request->placa;
 
-            $query = Combustible::with(['flota', 'personal.persona', 'destino_combustible', 'transaccion'])
+            $query = Combustible::with(['flota', 'personal.persona', 'destino_combustible', 'transaccion', 'grifo'])
                 ->where('estado_registro', 'A')
                 ->whereBetween('fecha', [$fecha_inicio, $fecha_fin]);
 
@@ -241,15 +241,16 @@ class SalidaCombustibleController extends Controller
             $resultadoAgrupado = $salida_combustible->groupBy(function ($item) {
                 return $item->flota ? $item->flota->placa : 'Sin Unidad';
             });
-
             $dataForExport = $resultadoAgrupado->flatMap(function ($items, $placa) {
                 return [
                     [
                         'placa' => $placa,
                         'detalle' => $items->map(function ($item) {
+                            $fechaLocal = Carbon::parse($item->fecha)->format('d-m-Y');
+
                             return [
                                 'id' => $item->id,
-                                'fecha' => $item->fecha,
+                                'fecha' => $fechaLocal,
                                 'personal' => $item->personal->persona->nombre . ' ' . $item->personal->persona->apellido_paterno . ' ' . $item->personal->persona->apellido_materno,
                                 'transaccion_id' => $item->transaccion_id,
                                 'precio_unitario_soles' => $item->precio_unitario_soles,
@@ -266,6 +267,7 @@ class SalidaCombustibleController extends Controller
                                 'precinto_nuevo' => $item->precinto_nuevo,
                                 'precinto_anterior' => $item->precinto_anterior,
                                 'observacion' => $item->observacion,
+                                'grifo' => $item->grifo ? $item->grifo->nombre : 'Sin Grifo',
                             ];
                         })
                     ]
