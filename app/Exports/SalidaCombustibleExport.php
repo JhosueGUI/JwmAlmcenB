@@ -32,8 +32,8 @@ class SalidaCombustibleExport implements FromView, ShouldAutoSize, WithEvents
                 $event->sheet->getDelegate()->setAutoFilter('A2:J' . $lastRow);
 
                 // Proteger la hoja
-                $event->sheet->getDelegate()->getProtection()->setPassword('JWM'); // Establecer una contraseña
-                $event->sheet->getDelegate()->getProtection()->setSheet(true); // Activar la protección de la hoja
+                // $event->sheet->getDelegate()->getProtection()->setPassword('JWM'); // Establecer una contraseña
+                // $event->sheet->getDelegate()->getProtection()->setSheet(true); // Activar la protección de la hoja
 
                 $event->sheet->getStyle('A1:J'.$lastRow)->applyFromArray([
                     'borders' => [
