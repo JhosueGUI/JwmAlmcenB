@@ -221,16 +221,27 @@ class SalidaCombustibleController extends Controller
         try {
             $fecha_inicio = $request->fecha_inicio;
             $fecha_fin = $request->fecha_fin;
-            $salida_combustible = Combustible::with(['flota', 'personal.persona', 'destino_combustible', 'transaccion'])
+            $placa_solicitada = $request->placa;
+
+            $query = Combustible::with(['flota', 'personal.persona', 'destino_combustible', 'transaccion'])
                 ->where('estado_registro', 'A')
-                ->whereBetween('fecha', [$fecha_inicio, $fecha_fin])
-                ->get();
+                ->whereBetween('fecha', [$fecha_inicio, $fecha_fin]);
+
+            if ($placa_solicitada) {
+                $placa = Flota::where('estado_registro', 'A')->where('placa', $placa_solicitada)->first();
+                if ($placa) {
+                    $query->where('flota_id', $placa->id);
+                } else {
+                    return response()->json(['mensaje' => 'La placa proporcionada no existe'], 404);
+                }
+            }
+
+            $salida_combustible = $query->get();
 
             $resultadoAgrupado = $salida_combustible->groupBy(function ($item) {
                 return $item->flota ? $item->flota->placa : 'Sin Unidad';
             });
 
-            // Reformatear los datos para la exportación
             $dataForExport = $resultadoAgrupado->flatMap(function ($items, $placa) {
                 return [
                     [
@@ -260,6 +271,7 @@ class SalidaCombustibleController extends Controller
                     ]
                 ];
             });
+
             // return response()->json(['data' => $dataForExport], 200);
 
             return Excel::download(new SalidaCombustibleExport($dataForExport), 'SalidaCombustible.xlsx');
