@@ -37,7 +37,8 @@ class AccesoSeeder extends Seeder
             [
                 'nombre' => 'Mantenimiento',
                 'subAcceso' => [
-                    'Ingreso MMTTO'
+                    'Ingreso MMTTO',
+                    'Formulario MMTTO',
                 ]
             ],
             [

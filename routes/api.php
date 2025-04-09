@@ -33,6 +33,7 @@ use App\Http\Controllers\Finanza\PersonaController;
 use App\Http\Controllers\Finanza\ProveedorController as FinanzaProveedorController;
 use App\Http\Controllers\Finanza\RendicionController;
 use App\Http\Controllers\Finanza\SubCategoriaController;
+use App\Http\Controllers\Formulario\PreguntaController;
 use App\Http\Controllers\PlanillaController;
 use App\Http\Controllers\ServicioExterno\ApiTerceroController;
 use Illuminate\Http\Request;
@@ -43,6 +44,7 @@ Route::group(['prefix' => 'orden_compra'], function () {
     Route::post('/generar', [OrdenDeCompraController::class, 'generarOrden']);
     Route::get('/descargar/{orden_compra}', [OrdenDeCompraController::class, 'descargarPdf']);
     Route::get('/observar/{orden_compra}', [OrdenDeCompraController::class, 'mostrarPdf']);
+    Route::get('/descargar/pdf/{formulario}', [PreguntaController::class, 'descargarPdf']);
     Route::get('/exportar', [PersonalController::class, 'exportarPersonal']);
     Route::get('/exportar_proveedor', [ProveedorController::class, 'exportarProveedor']);
     Route::get('/exportar_flota', [FlotaController::class, 'exportarFlota']);
@@ -52,6 +54,11 @@ Route::group(['prefix' => 'orden_compra'], function () {
 });
 Route::group(['prefix' => 'reporte'], function () {
     Route::get('/consumo/placa', [SalidaCombustibleController::class, 'ExportarConsumoPorPlaca']);
+});
+Route::group(['prefix' => 'formulario'], function () {
+    Route::post('/create', [PreguntaController::class, 'createSinLogin']);
+    Route::get('/get/unidad', [FlotaController::class, 'get']);
+    Route::get('/get/personal', [PersonalController::class, 'get']);
 });
 Route::group(['middleware' => [Cors::class]], function () {
     Route::post('/login', [AuthController::class, 'authenticate']);
@@ -248,6 +255,12 @@ Route::group(['middleware' => [Cors::class]], function () {
             });
             Route::group(['prefix' => 'persona_juridica'], function () {
                 Route::get('/get/{ruc}', [ApiTerceroController::class, 'ObtenerProveedorApi']);
+            });
+        });
+        Route::group(['prefix' => 'mantenimiento'], function () {
+            Route::group(['prefix' => 'formulario'], function () {
+                Route::post('/create', [PreguntaController::class, 'create']);
+                Route::get('/get', [PreguntaController::class, 'get']);
             });
         });
     });

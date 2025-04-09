@@ -60,5 +60,9 @@ class Personal extends Model
     public function cargo(){
         return $this->belongsTo(Cargo::class,'cargo_id','id');
     }
+    //le da su id a formulario(padre-hijo)
+    public function formulario(){
+        return $this->hasMany(Formulario::class);
+    }
 }
 
