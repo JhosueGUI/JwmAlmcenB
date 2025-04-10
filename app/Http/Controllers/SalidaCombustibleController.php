@@ -131,7 +131,7 @@ class SalidaCombustibleController extends Controller
                 Combustible::create([
                     'fecha' => $fechaLocal,
                     'destino_combustible_id' => $destino->id,
-                    'personal_id' => $personal->id,
+                    'personal_id' => $personal->id ?? null,
                     'flota_id' => $flota->id ?? null,
                     'transaccion_id' => $transaccion->id,
                     'numero_salida_stock' => $numero_salida_combustible,
