@@ -44,9 +44,6 @@ class SalidaCombustibleController extends Controller
                 return response()->json(["error" => "Producto no encontrado"], 404);
             }
             $personal = Personal::where('estado_registro', 'A')->where('id', $request->personal_id)->first();
-            if (!$personal) {
-                return response()->json(['resp' => 'Personal no Seleccionado'], 500);
-            }
             //verificar existencia de destino
             $destino = DestinoCombustible::where('estado_registro', 'A')->where('id', $request->destino_combustible_id)->first();
             if (!$destino) {
