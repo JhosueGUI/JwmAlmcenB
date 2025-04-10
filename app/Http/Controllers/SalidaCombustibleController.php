@@ -241,34 +241,37 @@ class SalidaCombustibleController extends Controller
             $dataForExport = $resultadoAgrupado->flatMap(function ($items, $placa) {
                 return [
                     [
-                        'placa' => $placa,
+                        'placa' => $placa ?? null,
                         'detalle' => $items->map(function ($item) {
-                            $fechaLocal = Carbon::parse($item->fecha)->format('d-m-Y');
-
+                            $fechaLocal = $item->fecha ? \Carbon\Carbon::parse($item->fecha)->format('d-m-Y') : null;
+                
                             return [
-                                'id' => $item->id,
+                                'id' => $item->id ?? null,
                                 'fecha' => $fechaLocal,
-                                'personal' => $item->personal->persona->nombre . ' ' . $item->personal->persona->apellido_paterno . ' ' . $item->personal->persona->apellido_materno,
-                                'transaccion_id' => $item->transaccion_id,
-                                'precio_unitario_soles' => $item->precio_unitario_soles,
-                                'precio_total_soles' => $item->precio_total_soles,
-                                'precio_total_igv' => $item->precio_total_igv,
-                                'numero_salida_ruta' => $item->numero_salida_ruta,
-                                'numero_salida_stock' => $item->numero_salida_stock,
-                                'kilometraje' => $item->kilometraje,
-                                'horometro' => $item->horometro,
-                                'destino' => $item->destino_combustible->nombre,
-                                'contometro' => $item->contometro_surtidor,
-                                'margen_error' => $item->margen_error_surtidor,
-                                'resultado' => $item->resultado,
-                                'precinto_nuevo' => $item->precinto_nuevo,
-                                'precinto_anterior' => $item->precinto_anterior,
-                                'observacion' => $item->observacion,
-                                'grifo' => $item->grifo ? $item->grifo->nombre : 'Sin Grifo',
+                                'personal' => ($item->personal->persona->nombre ?? null) . ' ' .
+                                              ($item->personal->persona->apellido_paterno ?? null) . ' ' .
+                                              ($item->personal->persona->apellido_materno ?? null),
+                                'transaccion_id' => $item->transaccion_id ?? null,
+                                'precio_unitario_soles' => $item->precio_unitario_soles ?? null,
+                                'precio_total_soles' => $item->precio_total_soles ?? null,
+                                'precio_total_igv' => $item->precio_total_igv ?? null,
+                                'numero_salida_ruta' => $item->numero_salida_ruta ?? null,
+                                'numero_salida_stock' => $item->numero_salida_stock ?? null,
+                                'kilometraje' => $item->kilometraje ?? null,
+                                'horometro' => $item->horometro ?? null,
+                                'destino' => $item->destino_combustible->nombre ?? null,
+                                'contometro' => $item->contometro_surtidor ?? null,
+                                'margen_error' => $item->margen_error_surtidor ?? null,
+                                'resultado' => $item->resultado ?? null,
+                                'precinto_nuevo' => $item->precinto_nuevo ?? null,
+                                'precinto_anterior' => $item->precinto_anterior ?? null,
+                                'observacion' => $item->observacion ?? null,
+                                'grifo' => $item->grifo->nombre ?? 'Sin Grifo',
                             ];
                         })
                     ]
                 ];
+                
             });
 
             // return response()->json(['data' => $dataForExport], 200);
