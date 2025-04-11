@@ -17,6 +17,6 @@ class Categoria extends Model
     ];
     //le da su id a subcategoria
     public function subcategoria(){
-        return $this->hasMany(Subcategoria::class);
+        return $this->hasMany(SubCategoria::class);
     }
 }
