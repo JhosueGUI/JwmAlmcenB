@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ServicioExterno;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class ApiTerceroController extends Controller
 {
@@ -83,7 +84,7 @@ class ApiTerceroController extends Controller
         return response()->json(['resp' => [
             'ruc' => $empresa->numeroDocumento,
             'razon_social' => $empresa->razonSocial,
-            'direccion'=>$empresa->direccion.''. $empresa->departamento . ' - ' . $empresa->provincia . ' - ' . $empresa->distrito,
+            'direccion' => $empresa->direccion . '' . $empresa->departamento . ' - ' . $empresa->provincia . ' - ' . $empresa->distrito,
         ]], 200);
     }
 }

@@ -217,6 +217,7 @@ Route::group(['middleware' => [Cors::class]], function () {
                 Route::post('/create', [MovimientoController::class, 'create']);
                 Route::post('/update/{idMovimiento}', [MovimientoController::class, 'editarMovimiento']);
                 Route::post('/trazabilidad/{idMovimiento}', [MovimientoController::class, 'crearTrazabilidad']);
+                Route::delete('/delete/{idMovimiento}', [MovimientoController::class, 'delete']);
             });
             Route::group(['prefix' => 'estado-comprobante'], function () {
                 Route::get('/get', [EstadoComprobanteController::class, 'GetEstado']);
@@ -226,6 +227,12 @@ Route::group(['middleware' => [Cors::class]], function () {
             });
             Route::group(['prefix' => 'empresa'], function () {
                 Route::get('/get', [EmpresaController::class, 'getEmpresa']);
+                Route::get('/get/camionero', [EmpresaController::class, 'getEmpresaCamionero']);
+                Route::get('/get/fsj', [EmpresaController::class, 'getEmpresaFSJ']);
+                Route::get('/get/pampaya', [EmpresaController::class, 'getEmpresaPampaya']);
+                Route::get('/get/william', [EmpresaController::class, 'getEmpresaWilliam']);
+                Route::get('/get/joel', [EmpresaController::class, 'getEmpresaJoel']);
+                Route::get('/get/jwm', [EmpresaController::class, 'getEmpresaJWM']);
             });
             Route::group(['prefix' => 'modo'], function () {
                 Route::get('/get', [ModoController::class, 'getModo']);
