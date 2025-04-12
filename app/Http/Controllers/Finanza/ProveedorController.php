@@ -12,7 +12,7 @@ class ProveedorController extends Controller
         try{
             $proveedorExistente=Proveedor::where('estado_registro','A')->where('ruc',$request->ruc)->first();
             if($proveedorExistente){
-                return response()->json(['resp'=>'El RUC ya está en uso por otro proveedor'],500);
+                return response()->json(['resp'=>'El RUC ya está en uso por otro proveedor'],200);
             }
             Proveedor::updateOrCreate(
                 [

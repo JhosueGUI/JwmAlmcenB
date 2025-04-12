@@ -297,4 +297,43 @@ class MovimientoController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    public function delete($idMovimiento){
+        try{
+            DB::beginTransaction();
+            $movimiento = Movimiento::where('id', $idMovimiento)->first();
+            if (!$movimiento) {
+                return response()->json(['error' => 'Movimiento no encontrado'], 404);
+            }
+            $empresa = Empresa::where('id', $movimiento->empresa_id)->first();
+            if (!$empresa) {
+                return response()->json(['error' => 'Empresa no encontrada'], 404);
+            }
+            if($movimiento->ingreso > 0){
+                if($movimiento->moneda_id === 1){
+                    $empresa->update([
+                        'total_ingreso_soles' => $empresa->total_ingreso_soles - $movimiento->ingreso
+                    ]);
+                }else if($movimiento->moneda_id === 2){
+                    $empresa->update([
+                        'total_ingreso_dolares' => $empresa->total_ingreso_dolares - $movimiento->ingreso
+                    ]);
+                }
+            }else if($movimiento->egreso > 0){
+                if($movimiento->moneda_id === 1){
+                    $empresa->update([
+                        'total_egreso_soles' => $empresa->total_egreso_soles - $movimiento->egreso
+                    ]);
+                }else if($movimiento->moneda_id === 2){
+                    $empresa->update([
+                        'total_egreso_dolares' => $empresa->total_egreso_dolares - $movimiento->egreso
+                    ]);
+                }
+            }
+            $movimiento->delete();
+            DB::commit();
+            return response()->json(['resp' => 'Movimiento eliminado con éxito'], 200);
+        }catch(\Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
