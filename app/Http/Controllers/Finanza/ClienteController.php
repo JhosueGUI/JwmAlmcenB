@@ -22,12 +22,13 @@ class ClienteController extends Controller
     {
         try {
             DB::beginTransaction();
-            $cliente=Cliente::create([
-                'nombre_cliente' => $request->nombre_cliente,
-            ]);
-            if($request->nombre_cliente === $cliente->nombre_cliente){
+            $existeCliente=Cliente::where('nombre_cliente', $request->nombre_cliente)->first();
+            if($existeCliente){
                 return response()->json(['resp' => 'Cliente ya existente'], 200);
             }
+            Cliente::create([
+                'nombre_cliente' => $request->nombre_cliente,
+            ]);
             DB::commit();
             return response()->json(['resp' => 'Cliente creado correctamente'], 200);
         } catch (\Exception $e) {
