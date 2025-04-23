@@ -22,6 +22,13 @@ class AccesoSeeder extends Seeder
                 ]
             ],
             [
+                'nombre' => 'Monitoreo',
+                'subAcceso' => [
+                    'Alertas',
+                    'Seguimiento',
+                ]
+            ],
+            [
                 'nombre' => 'RRHH',
                 'subAcceso' => [
                     'Asistencias',
