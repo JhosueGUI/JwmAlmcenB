@@ -52,24 +52,19 @@ class PersonalController extends Controller
     {
         try {
             $personalDisable = Personal::where('id', $idPersonal)->where('estado_registro', 'I')->first();
-            $personaDisable = Persona::where('id', $personalDisable->persona_id)->where('estado_registro', 'I')->first();
-            $userDisable = User::where('personal_id', $personalDisable->id)->where('estado_registro', 'I')->first();
-            $user_rolDisable = UsuarioRol::where('user_id', $userDisable->id)->where('estado_registro', 'I')->first();
 
             if (!$personalDisable) {
                 return response()->json(['resp' => 'Personal no existente'], 200);
             }
 
+            $personaDisable = Persona::where('id', $personalDisable?->persona_id)->where('estado_registro', 'I')->first();
+            $userDisable = User::where('personal_id', $personalDisable?->id)->where('estado_registro', 'I')->first();
+            $user_rolDisable = UsuarioRol::where('user_id', $userDisable?->id)->where('estado_registro', 'I')->first();
+
             $personalDisable->update(['estado_registro' => 'A']);
-            $personaDisable->update(['estado_registro' => 'A']);
-
-            if ($userDisable) {
-                $userDisable->update(['estado_registro' => 'A']);
-            }
-
-            if ($user_rolDisable) {
-                $user_rolDisable->update(['estado_registro' => 'A']);
-            }
+            $personaDisable?->update(['estado_registro' => 'A']);
+            $userDisable?->update(['estado_registro' => 'A']);
+            $user_rolDisable?->update(['estado_registro' => 'A']);
 
             return response()->json(['resp' => 'Personal Activado Correctamente'], 200);
         } catch (\Exception $e) {
