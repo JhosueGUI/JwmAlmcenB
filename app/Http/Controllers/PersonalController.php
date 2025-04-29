@@ -35,6 +35,49 @@ class PersonalController extends Controller
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
     }
+    public function getPersonalDisable(){
+        try{
+            $personalDisable=Personal::with('persona', 'cargo.area.horario', 'planilla')->where('estado_registro', 'I')->get();
+            if (!$personalDisable) {
+                return response()->json(['resp' => 'Personal no existentes'], 200);
+            }
+            return response()->json(['data' => $personalDisable], 200);
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }
+    }
+    public function reactivarPeronal($idPersonal){
+        try{
+            $personalDisable=Personal::where('id',$idPersonal)->where('estado_registro','I')->first();
+            $personaDisable=Persona::where('id',$personalDisable->persona_id)->where('estado_registro','I')->first();
+            $userDisable=User::where('personal_id',$personalDisable->id)->where('estado_registro','I')->first();
+            $user_rolDisable=UsuarioRol::where('user_id',$userDisable->id)->where('estado_registro','I')->first();
+            if (!$personalDisable) {
+                return response()->json(['resp' => 'Personal no existentes'], 200);
+            }
+            $personalDisable->update([
+                'estado_registro'=>'A'
+            ]);
+            $personaDisable->update([
+                'estado_registro'=>'A'
+            ]);
+            $userDisable->update([
+                'estado_registro'=>'A'
+            ]);
+            $user_rolDisable->update([
+                'estado_registro'=>'A'
+            ]);
+
+            return response()->json(['resp' => 'Personal Activado Correctamente'], 200);
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }
+    }
     public function getPersonalTransaccion()
     {
         try {
@@ -161,8 +204,8 @@ class PersonalController extends Controller
             DB::beginTransaction();
             $personal = Personal::where('estado_registro', 'A')->find($personalID);
             $persona = Persona::where('estado_registro', 'A')->where('id', $personal->persona_id)->first();
-            // $user=User::where('estado_registro','A')->where('personal_id',$personal->id)->first();
-            // $user_rol=UsuarioRol::where('estado_registro','A')->where('user_id',$user->id)->first();
+            $user=User::where('estado_registro','A')->where('personal_id',$personal->id)->first();
+            $user_rol=UsuarioRol::where('estado_registro','A')->where('user_id',$user->id)->first();
             if (!$personal) {
                 return response()->json(['resp' => 'Personal ya se encuentra Inhabilitado'], 200);
             }
@@ -172,12 +215,12 @@ class PersonalController extends Controller
             $personal->update([
                 'estado_registro' => 'I'
             ]);
-            // $user->update([
-            //     'estado_registro'=>'I'
-            // ]);
-            // $user_rol->update([
-            //     'estado_registro'=>'I'
-            // ]);
+            $user->update([
+                'estado_registro'=>'I'
+            ]);
+            $user_rol->update([
+                'estado_registro'=>'I'
+            ]);
             DB::commit();
             return response()->json(['resp' => 'Personal Inhabilitado Correctamente'], 200);
         } catch (\Exception $e) {
