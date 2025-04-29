@@ -51,6 +51,7 @@ class PersonalController extends Controller
     public function reactivarPeronal($idPersonal)
     {
         try {
+            DB::beginTransaction();
             $personalDisable = Personal::where('id', $idPersonal)->where('estado_registro', 'I')->first();
 
             if (!$personalDisable) {
@@ -65,7 +66,7 @@ class PersonalController extends Controller
             $personaDisable?->update(['estado_registro' => 'A']);
             $userDisable?->update(['estado_registro' => 'A']);
             $user_rolDisable?->update(['estado_registro' => 'A']);
-
+            DB::commit();
             return response()->json(['resp' => 'Personal Activado Correctamente'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -200,24 +201,20 @@ class PersonalController extends Controller
         try {
             DB::beginTransaction();
             $personal = Personal::where('estado_registro', 'A')->find($personalID);
-            $persona = Persona::where('estado_registro', 'A')->where('id', $personal->persona_id)->first();
-            $user = User::where('estado_registro', 'A')->where('personal_id', $personal->id)->first();
-            $user_rol = UsuarioRol::where('estado_registro', 'A')->where('user_id', $user->id)->first();
+
             if (!$personal) {
                 return response()->json(['resp' => 'Personal ya se encuentra Inhabilitado'], 200);
             }
-            $persona->update([
-                'estado_registro' => 'I'
-            ]);
-            $personal->update([
-                'estado_registro' => 'I'
-            ]);
-            $user->update([
-                'estado_registro' => 'I'
-            ]);
-            $user_rol->update([
-                'estado_registro' => 'I'
-            ]);
+
+            $persona = Persona::where('estado_registro', 'A')->where('id', $personal?->persona_id)->first();
+            $user = User::where('estado_registro', 'A')->where('personal_id', $personal?->id)->first();
+            $user_rol = UsuarioRol::where('estado_registro', 'A')->where('user_id', $user?->id)->first();
+
+            $personal->update(['estado_registro' => 'I']);
+            $persona?->update(['estado_registro' => 'I']);
+            $user?->update(['estado_registro' => 'I']);
+            $user_rol?->update(['estado_registro' => 'I']);
+
             DB::commit();
             return response()->json(['resp' => 'Personal Inhabilitado Correctamente'], 200);
         } catch (\Exception $e) {
