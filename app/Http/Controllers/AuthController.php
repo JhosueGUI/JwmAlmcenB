@@ -24,10 +24,11 @@ class AuthController extends Controller
             $credentials = $request->only('username', 'password');
 
             // Verificando si el usuario existe y está activo
-            $user = User::with('personal.persona.tipo_documento', 'user_rol.rol.acceso_rol.acceso')
+            $user = User::with('personal.persona.tipo_documento', 'user_rol.rol.acceso_rol.acceso.sub_acceso.sub_acceso')
                 ->where('username', $request->username)
                 ->where('estado_registro', 'A')
                 ->first();
+            // return response()->json($user);
 
             if (!$user) {
                 return response()->json(["error" => "El nombre de usuario no existe"], 400);
@@ -59,7 +60,7 @@ class AuthController extends Controller
             $accesosFormateados = $accesos->filter(function ($acceso) {
                 return $acceso->acceso_padre_id === null;
             })->map(function ($acceso) use ($accesos) {
-                // Agregamos sub_acceso
+                // Obtenemos los sub-accesos del acceso actual
                 $subAccesos = $accesos->filter(function ($sub) use ($acceso) {
                     return $sub->acceso_padre_id == $acceso->id;
                 })->values();
@@ -71,7 +72,12 @@ class AuthController extends Controller
                     "ruta" => $acceso->ruta,
                     "acceso_padre_id" => $acceso->acceso_padre_id,
                     "estado_registro" => $acceso->estado_registro,
-                    "sub_acceso" => $subAccesos->map(function ($sub) {
+                    "sub_acceso" => $subAccesos->map(function ($sub) use ($accesos) {
+                        // Aquí podrías seguir buscando sub-sub-accesos si fuera necesario
+                        $subSubAccesos = $accesos->filter(function ($subSub) use ($sub) {
+                            return $subSub->acceso_padre_id == $sub->id;
+                        })->values();
+            
                         return [
                             "id" => $sub->id,
                             "nombre" => $sub->nombre,
@@ -79,10 +85,21 @@ class AuthController extends Controller
                             "ruta" => $sub->ruta,
                             "acceso_padre_id" => $sub->acceso_padre_id,
                             "estado_registro" => $sub->estado_registro,
+                            "sub_acceso" => $subSubAccesos->map(function ($sSub) {
+                                return [
+                                    "id" => $sSub->id,
+                                    "nombre" => $sSub->nombre,
+                                    "tipo_acceso" => $sSub->tipo_acceso,
+                                    "ruta" => $sSub->ruta,
+                                    "acceso_padre_id" => $sSub->acceso_padre_id,
+                                    "estado_registro" => $sSub->estado_registro,
+                                    "sub_acceso" => [], // Si no hay más niveles, se queda vacío
+                                ];
+                            })->toArray(),
                         ];
-                    }),
+                    })->toArray(),
                 ];
-            })->values();
+            })->values()->toArray();
             // Preparando la respuesta
             $response = [
                 "id" => $user->id,
