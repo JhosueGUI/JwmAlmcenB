@@ -99,10 +99,12 @@ Route::group(['middleware' => [Cors::class]], function () {
             Route::group(['prefix' => 'personal'], function () {
                 Route::get('/get', [PersonalController::class, 'get']);
                 Route::get('/get/transaccion', [PersonalController::class, 'getPersonalTransaccion']);
+                Route::get('/get/disable', [PersonalController::class, 'getPersonalDisable']);
                 Route::get('/get_flota', [PersonalController::class, 'getPersonalFlota']);
                 Route::get('/show/{personalID}', [PersonalController::class, 'show']);
                 Route::post('/create', [PersonalController::class, 'create']);
                 Route::post('/update/{personalID}', [PersonalController::class, 'update']);
+                Route::post('/reactivacion/{personalID}', [PersonalController::class, 'reactivarPeronal']);
                 Route::delete('/delete/{personalID}', [PersonalController::class, 'delete']);
                 Route::post('/asignar_rol/{personalID}', [PersonalController::class, 'AsignarRol']);
                 Route::post('/credenciales/{idPersonal}', [PersonalController::class, 'EnviarCredenciales']);
