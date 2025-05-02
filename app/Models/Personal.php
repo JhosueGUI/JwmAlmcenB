@@ -17,6 +17,14 @@ class Personal extends Model
         'habilidad',
         'experiencia',
         'fecha_ingreso',
+        'fecha_salida',
+        'inicio_contrato',
+        'fin_contrato',
+        'pdf_contrato',
+        'fecha_alta',
+        'fecha_baja',
+        'sueldo_planilla',
+        'sueldo_real',
         'fecha_ingreso_planilla',
         'estado_registro'
     ];

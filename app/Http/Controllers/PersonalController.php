@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Imports\PersonalImport;
 use App\Models\Area;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -133,6 +134,8 @@ class PersonalController extends Controller
             if (!$request->numero_documento) {
                 return response()->json(['resp' => 'Ingrese el número de Documento'], 500);
             }
+            $fechaNacimiento = Carbon::parse($request->fecha_nacimiento)->format('Y-m-d');
+
             $persona = Persona::updateOrCreate([
                 'numero_documento' => $request->numero_documento
             ], [
@@ -141,18 +144,33 @@ class PersonalController extends Controller
                 'apellido_materno' => $request->apellido_materno,
                 'gmail' => $request->gmail,
                 'tipo_documento_id' => $request->tipo_documento_id,
-                'fecha_nacimiento' => $request->fecha_nacimiento,
+                'fecha_nacimiento' => $fechaNacimiento,
                 'estado_registro' => 'A',
             ]);
+            $fechaIngreso = Carbon::parse($request->fecha_ingreso)->format('Y-m-d');
+            $fechaSalida = Carbon::parse($request->fecha_salida)->format('Y-m-d');
+            $InicioContrato = Carbon::parse($request->inicio_contrato)->format('Y-m-d');
+            $FinContrato = Carbon::parse($request->fin_contrato)->format('Y-m-d');
+            $Alta = Carbon::parse($request->fecha_alta)->format('Y-m-d');
+            $Baja = Carbon::parse($request->fecha_baja)->format('Y-m-d');
+            $IngresoPlanilla = Carbon::parse($request->fecha_ingreso_planilla)->format('Y-m-d');
             $personal = Personal::updateOrCreate([
                 'persona_id' => $persona->id,
             ], [
                 'cargo_id' => $request->cargo_id,
+                'planilla_id' => $request->planilla_id,
                 'habilidad' => $request->habilidad,
                 'experiencia' => $request->experiencia,
-                'fecha_ingreso' => $request->fecha_ingreso,
-                'planilla_id' => $request->planilla_id,
-                'fecha_ingreso_planilla' => $request->fecha_ingreso_planilla,
+                'fecha_ingreso' => $fechaIngreso,
+                'fecha_salida' => $fechaSalida,
+                'inicio_contrato' => $InicioContrato,
+                'fin_contrato' => $FinContrato,
+                'pdf_contrato' => $request->pdf_contrato,
+                'sueldo_planilla' => $request->sueldo_planilla,
+                'sueldo_real' => $request->sueldo_real,
+                'fecha_alta' => $Alta,
+                'fecha_baja' => $Baja,
+                'fecha_ingreso_planilla' => $IngresoPlanilla,
                 'estado_registro' => 'A',
             ]);
             DB::commit();
@@ -166,29 +184,68 @@ class PersonalController extends Controller
     {
         try {
             DB::beginTransaction();
+
             $personal = Personal::where('estado_registro', 'A')->find($personalID);
             if (!$personal) {
                 return response()->json(['resp' => 'Personal no existe'], 200);
             }
+
             $persona = Persona::where('estado_registro', 'A')->find($personal->persona_id);
-            $existePersona = Persona::where('estado_registro', 'A')->where('numero_documento', $request->numero_documento)->where('id', '!=', $persona->id)->first();
+
+            $existePersona = Persona::where('estado_registro', 'A')
+                ->where('numero_documento', $request->numero_documento)
+                ->where('id', '!=', $persona->id)
+                ->first();
+
             if ($existePersona) {
                 return response()->json(['resp' => 'El número de documento ya está en uso por otra persona'], 500);
             }
+
+            if (!$request->tipo_documento_id) {
+                return response()->json(['resp' => 'Seleccione un Tipo de Documento'], 500);
+            }
+
+            if (!$request->numero_documento) {
+                return response()->json(['resp' => 'Ingrese el número de Documento'], 500);
+            }
+
+            $fechaNacimiento = Carbon::parse($request->fecha_nacimiento)->format('Y-m-d');
+            $fechaIngreso = Carbon::parse($request->fecha_ingreso)->format('Y-m-d');
+            $fechaSalida = Carbon::parse($request->fecha_salida)->format('Y-m-d');
+            $InicioContrato = Carbon::parse($request->inicio_contrato)->format('Y-m-d');
+            $FinContrato = Carbon::parse($request->fin_contrato)->format('Y-m-d');
+            $Alta = Carbon::parse($request->fecha_alta)->format('Y-m-d');
+            $Baja = Carbon::parse($request->fecha_baja)->format('Y-m-d');
+            $IngresoPlanilla = Carbon::parse($request->fecha_ingreso_planilla)->format('Y-m-d');
+
             $persona->update([
                 'nombre' => $request->nombre,
                 'apellido_paterno' => $request->apellido_paterno,
                 'apellido_materno' => $request->apellido_materno,
                 'gmail' => $request->gmail,
                 'tipo_documento_id' => $request->tipo_documento_id,
-                'numero_documento' => $request->numero_documento
+                'numero_documento' => $request->numero_documento,
+                'fecha_nacimiento' => $fechaNacimiento,
             ]);
+
             $personal->update([
-                'personal_id' => $persona->id,
-                'area_id' => $request->area_id,
+                'persona_id' => $persona->id,
+                'cargo_id' => $request->cargo_id,
+                'planilla_id' => $request->planilla_id,
                 'habilidad' => $request->habilidad,
-                'experiencia' => $request->experiencia
+                'experiencia' => $request->experiencia,
+                'fecha_ingreso' => $fechaIngreso,
+                'fecha_salida' => $fechaSalida,
+                'inicio_contrato' => $InicioContrato,
+                'fin_contrato' => $FinContrato,
+                'pdf_contrato' => $request->pdf_contrato,
+                'sueldo_planilla' => $request->sueldo_planilla,
+                'sueldo_real' => $request->sueldo_real,
+                'fecha_alta' => $Alta,
+                'fecha_baja' => $Baja,
+                'fecha_ingreso_planilla' => $IngresoPlanilla,
             ]);
+
             DB::commit();
             return response()->json(['resp' => 'Personal Actualizado Correctamente'], 200);
         } catch (\Exception $e) {
@@ -196,6 +253,7 @@ class PersonalController extends Controller
             return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
         }
     }
+
     public function delete($personalID)
     {
         try {
