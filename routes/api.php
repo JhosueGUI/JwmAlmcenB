@@ -60,6 +60,9 @@ Route::group(['prefix' => 'formulario'], function () {
     Route::get('/get/unidad', [FlotaController::class, 'get']);
     Route::get('/get/personal', [PersonalController::class, 'get']);
 });
+Route::group(['prefix' => 'valeSalida'], function () {
+    Route::get('/descargar/{vale}', [SalidaController::class, 'descargarPdf']);
+});
 Route::group(['middleware' => [Cors::class]], function () {
     Route::post('/login', [AuthController::class, 'authenticate']);
     Route::group(['middleware' => ['jwt.auth', Cors::class]], function () {
@@ -136,6 +139,7 @@ Route::group(['middleware' => [Cors::class]], function () {
                 Route::post('/update/{idSalida}', [SalidaController::class, 'update']);
                 Route::delete('/delete/{idSalida}', [SalidaController::class, 'delete']);
                 Route::post('/importar', [SalidaController::class, 'importarSalida']);
+                Route::get('/get/ultimo', [SalidaController::class, 'getUltimaSalida']);
             });
             Route::group(['prefix' => 'salida_combustible'], function () {
                 Route::post('/create', [SalidaCombustibleController::class, 'crearSalidaCombustible']);

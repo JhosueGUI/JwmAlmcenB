@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Jobs\ImportarSalidaJob;
-
+use App\Models\Personal;
+use Barryvdh\DomPDF\Facade\Pdf;
 class SalidaController extends Controller
 {
     public function get()
@@ -73,7 +74,12 @@ class SalidaController extends Controller
         if (!is_array($productos) || empty($productos)) {
             return response()->json(['resp' => 'Se requiere un array de productos válido'], 400);
         }
-
+        $vale=$request->vale;
+        $fecha = Carbon::now('America/Lima')->format('Y-m-d');
+        $personal = $request->input('personal_id');
+        $personal=Personal::with('persona')->where('estado_registro','A')->where('id',$request->input('personal_id'))->first();
+        $observaciones=$request->input('observaciones');
+        $unidad=$request->input('unidad');
         foreach ($productos as $productoData) {
             // Validaciones para cada producto
             if (!isset($productoData['SKU'])) {
@@ -85,7 +91,7 @@ class SalidaController extends Controller
             }
 
             // Traer producto
-            $producto = Producto::where('estado_registro', 'A')->where('SKU', $productoData['SKU'])->first();
+            $producto = Producto::with('unidad_medida','articulo')->where('estado_registro', 'A')->where('SKU', $productoData['SKU'])->first();
             if (!$producto) {
                 return response()->json(['resp' => 'Producto no encontrado: ' . $productoData['SKU']], 404);
             }
@@ -106,7 +112,7 @@ class SalidaController extends Controller
                 'precio_total_soles' => $precio_total_soles,
                 'precio_total_dolares' => $precio_total_dolares,
                 'marca' => $productoData['marca'] ?? null,
-                'observaciones' => $request->input('observaciones'),
+                'observaciones' => $observaciones,
             ]);
 
             // Actualizar inventario
@@ -131,29 +137,74 @@ class SalidaController extends Controller
 
             // Crear salida
             Salida::create([
-                'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
-                'vale' => $request->input('vale'),
+                'fecha' => $fecha,
+                'vale' =>$vale,
                 'transaccion_id' => $transaccion->id,
                 'destino' => $request->input('destino'),
                 'personal_id' => $request->input('personal_id'),
-                'unidad' => $request->input('unidad'),
+                'unidad' =>$unidad,
                 'duracion_neumatico' => $request->input('duracion_neumatico'),
                 'kilometraje_horometro' => $request->input('kilometraje_horometro'),
                 'fecha_vencimiento' => $request->input('fecha_vencimiento'),
                 'numero_salida' => $productoData['numero_salida'],
             ]);
-
             // Verificar stock
             if ($productoData['numero_salida'] > $stock_logico + $productoData['numero_salida']) {
                 return response()->json(['resp' => 'Stock insuficiente para el producto: ' . $productoData['SKU']], 400);
             }
+            $lineas_salida[] = [
+                'cantidad' => $productoData['numero_salida'],
+                'unidad_medida' => $producto->unidad_medida->nombre, 
+                'nombre_producto' => $producto->articulo->nombre,
+            ];
         }
+        $html = view('pdf.valeSalida', [
+            'numero_vale' => $vale,
+            'fecha_vale' => $fecha,
+            'lineas_salida' => $lineas_salida,
+            'personal' => $personal->persona->nombre . ' ' . $personal->persona->apellido_paterno . ' ' . $personal->persona->apellido_materno,
+            'observaciones'=>$observaciones,
+            'unidad'=>$unidad,
+        ])->render();
+        // Generar PDF
+            // $pdf = app('dompdf.wrapper')->loadHTML($html); // Alternativa si la Facade Pdf no está configurada
+            $pdf = Pdf::loadHTML($html);
+            $pdf->setPaper('A4', 'portrait');
+            $output = $pdf->output(); // Contenido binario del PDF
 
-        DB::commit();
-        return response()->json(['resp' => 'Salidas registradas correctamente'], 200);
+            // Guardar el PDF
+            $pdf_nombre = $vale . '-vale_salida.pdf';
+            $pdf_path_relativo = "valeSalida/pdf/" . $pdf_nombre; // Ruta relativa dentro del disco 'public'
+            Storage::disk('public')->put($pdf_path_relativo, $output);
+
+            DB::commit();
+
+            return response()->json(['resp' => 'Salidas registradas correctamente.'], 200);
+
 
     } catch (\Exception $e) {
         DB::rollBack();
+        return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+    }
+}
+public function descargarPdf($idValeSalida){
+    try {
+        // Generar el nombre del archivo PDF basado en el número de orden de compra
+        $pdf_nombre = $idValeSalida . '-vale_salida.pdf';
+
+        // Verificar si el archivo PDF existe
+        $pdfPath = storage_path('app/public/valeSalida/pdf/' . $pdf_nombre);       // Ruta completa al archivo PDF
+
+        if (!file_exists($pdfPath)) {
+            return response()->json(['error' => 'El archivo PDF no existe.'], 404);
+        }
+        // Descargar el archivo PDF
+        $headers = [
+            'Content-Type' => 'application/pdf',
+        ];
+
+        return response()->download($pdfPath, $pdf_nombre, $headers);
+    } catch (\Exception $e) {
         return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
     }
 }
@@ -405,5 +456,17 @@ class SalidaController extends Controller
     public function exportarSalida()
     {
         return Excel::download(new SalidaExport(), 'Salida.xlsx');
+    }
+    public function getUltimaSalida(){
+        try{
+            $salida = Salida::where('estado_registro', 'A')->orderBy('id', 'desc')->first();
+            if (!$salida) {
+                return response()->json(['resp' => 'Salida no Disponible'], 500);
+            }
+            return response()->json(['resp' => $salida], 200);
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(["error" => "Algo salió mal", "message" => $e->getMessage()], 500);
+        }
     }
 }
