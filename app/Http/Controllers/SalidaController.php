@@ -80,6 +80,8 @@ class SalidaController extends Controller
         $personal=Personal::with('persona')->where('estado_registro','A')->where('id',$request->input('personal_id'))->first();
         $observaciones=$request->input('observaciones');
         $unidad=$request->input('unidad');
+        $destino=$request->input('destino');
+        $kilometraje_horometro=$request->input('kilometraje_horometro');
         foreach ($productos as $productoData) {
             // Validaciones para cada producto
             if (!isset($productoData['SKU'])) {
@@ -140,11 +142,11 @@ class SalidaController extends Controller
                 'fecha' => $fecha,
                 'vale' =>$vale,
                 'transaccion_id' => $transaccion->id,
-                'destino' => $request->input('destino'),
+                'destino' => $destino,
                 'personal_id' => $request->input('personal_id'),
                 'unidad' =>$unidad,
                 'duracion_neumatico' => $request->input('duracion_neumatico'),
-                'kilometraje_horometro' => $request->input('kilometraje_horometro'),
+                'kilometraje_horometro' => $kilometraje_horometro,
                 'fecha_vencimiento' => $request->input('fecha_vencimiento'),
                 'numero_salida' => $productoData['numero_salida'],
             ]);
@@ -164,6 +166,8 @@ class SalidaController extends Controller
             'lineas_salida' => $lineas_salida,
             'personal' => $personal->persona->nombre . ' ' . $personal->persona->apellido_paterno . ' ' . $personal->persona->apellido_materno,
             'observaciones'=>$observaciones,
+            'kilometraje_horometro'=>$kilometraje_horometro,
+            'destino'=>$destino,
             'unidad'=>$unidad,
         ])->render();
         // Generar PDF
