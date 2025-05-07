@@ -121,7 +121,7 @@
                     style="width: 70%; border-collapse: collapse; margin-left: auto; display: inline-table; vertical-align: top;">
                     <tr>
                         <td colspan="2" style="text-align: left; padding: 5px 10px; line-height: 1; font-size: 7;">
-                            <strong>VALE</strong>
+                            <strong></strong>
                         </td>
                     </tr>
                     <tr>
@@ -194,19 +194,21 @@
 
     <table class="footer-table">
         <tr>
-            <td>OBSERVACIONES</td>
             <td>UNIDAD</td>
+            <td>KM || HR</td>
             <td>PERSONAL</td>
             <td>FIRMA</td>
         </tr>
         <tr>
-            <td style="border-top: none; padding-bottom: 30px;">{{ $observaciones }}</td>
             <td style="border-top: none; padding-bottom: 30px;">{{ $unidad }}</td>
+            <td style="border-top: none; padding-bottom: 30px;">{{ $kilometraje_horometro }}</td>
             <td style="border-top: none; padding-bottom: 30px;">{{ $personal }}</td>
             <td style="border-top: none; padding-bottom: 30px; width: 200px;"></td>
-
         </tr>
     </table>
+    <div style="text-align: right; margin-top: 20px; font-weight: bold;">
+        DESTINO : {{ $destino }}
+    </div>
 
 </body>
 
