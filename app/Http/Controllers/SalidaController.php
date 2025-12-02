@@ -18,7 +18,6 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Jobs\ImportarSalidaJob;
 use App\Models\Personal;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Maatwebsite\Excel\Excel as ExcelFormat;
 class SalidaController extends Controller
 {
     public function get()
@@ -459,14 +458,9 @@ public function descargarPdf($idValeSalida){
         }
     }
     public function exportarSalida()
-{
-    $excel = Excel::raw(new SalidaExport(), ExcelFormat::XLSX);
-
-    return response()->streamDownload(
-        fn() => print($excel),
-        'Salida.xlsx'
-    );
-}
+    {
+        return Excel::download(new SalidaExport(), 'Salida.xlsx');
+    }
     public function getUltimaSalida(){
         try{
             $salida = Salida::where('estado_registro', 'A')->orderBy('id', 'desc')->first();
