@@ -458,9 +458,16 @@ public function descargarPdf($idValeSalida){
         }
     }
     public function exportarSalida()
-    {
+{
+    try {
         return Excel::download(new SalidaExport(), 'Salida.xlsx');
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
     public function getUltimaSalida(){
         try{
             $salida = Salida::where('estado_registro', 'A')->orderBy('id', 'desc')->first();
