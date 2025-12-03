@@ -119,6 +119,7 @@ class IngresoController extends Controller
 
                 // Crear ingreso
                 $ingreso = Ingreso::create([
+                    //
                     'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
                     'guia_remision' => $request->guia_remision,
                     'tipo_cp' => $request->tipo_cp,
