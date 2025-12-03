@@ -73,7 +73,7 @@ class IngresoController extends Controller
             if (!$request->productos || !is_array($request->productos)) {
                 return response()->json(['resp' => 'Productos no proporcionados o formato incorrecto'], 400);
             }
-
+            $fechaLocal = Carbon::parse($request->fecha)->format('Y-m-d');
             foreach ($request->productos as $productoData) {
                 // Verificar existencia del producto
                 $producto = Producto::where('estado_registro', 'A')->where('SKU', $productoData['SKU'])->first();
@@ -120,7 +120,7 @@ class IngresoController extends Controller
                 // Crear ingreso
                 $ingreso = Ingreso::create([
                     //
-                    'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
+                    'fecha' => $fechaLocal,
                     'guia_remision' => $request->guia_remision,
                     'tipo_cp' => $request->tipo_cp,
                     'documento' => $request->documento,
@@ -194,7 +194,7 @@ class IngresoController extends Controller
             if (!$proveedor) {
                 return response()->json(['resp' => 'Proveedor no seleccionado'], 500);
             }
-
+            $fechaLocal = Carbon::parse($request->fecha)->format('Y-m-d');
             //Inventario del Producto actual
             $inventario_producto_actual = Producto::with('inventario')->where('estado_registro', 'A')->where('id', $transaccion->producto_id)->first();
             $inventario_actual = Inventario::where('estado_registro', 'A')->where('producto_id', $inventario_producto_actual->id)->first();
@@ -249,7 +249,7 @@ class IngresoController extends Controller
                     'precio_dolares' => 0
                 ]);
             }
-
+            
             // Crear transacción
             $numero_ingreso = $request->numero_ingreso;
             $precio_total_soles = $numero_ingreso * $precio_unitario_soles;
@@ -268,7 +268,7 @@ class IngresoController extends Controller
 
             // Actualizar ingreso
             $ingreso->update([
-                'fecha' => Carbon::now('America/Lima')->format('Y-m-d'),
+                'fecha' => $fechaLocal,
                 'guia_remision' => $request->guia_remision,
                 'tipo_cp' => $request->tipo_cp,
                 'documento' => $request->documento,
