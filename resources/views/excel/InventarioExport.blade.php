@@ -22,7 +22,7 @@
                 <td>{{ $Inventario->producto->articulo->nombre ?? ''}}</td>
                 <td>{{ $Inventario->producto->unidad_medida->nombre ?? ''}}</td>
                 <td>{{ $Inventario->total_salida ?? ''}}</td>
-                <td>{{ $Inventario->total_salida ?? ''}}</td>
+                <td>{{ $Inventario->total_ingreso ?? ''}}</td>
                 <td>{{ $Inventario->stock_logico ?? ''}}</td>
             </tr>  
         @endforeach
